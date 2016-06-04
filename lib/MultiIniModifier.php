@@ -2,7 +2,7 @@
 
 /**
  * @author     Laurent Jouanneau
- * @copyright  2008-2015 Laurent Jouanneau
+ * @copyright  2008-2016 Laurent Jouanneau
  *
  * @link       http://jelix.org
  * @licence    http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public Licence, see LICENCE file
@@ -51,19 +51,36 @@ class MultiIniModifier
      * modify an option in the ini file. If the option doesn't exist,
      * it is created.
      *
-     * @param string $name    the name of the option to modify
-     * @param string $value   the new value
-     * @param string $section the section where to set the item. 0 is the global section
-     * @param string $key     for option which is an item of array, the key in the array
-     * @param bool   $master  if true, change the value in the master file, else change
-     *                        the value in the overrider file (default)
+     * @param string $name     the name of the option to modify
+     * @param string $value    the new value
+     * @param string $section  the section where to set the item. 0 is the global section
+     * @param string $key      for option which is an item of array, the key in the array
+     * @param bool   $onMaster if true, change the value in the master file, else change
+     *                         the value in the overrider file (default)
      */
-    public function setValue($name, $value, $section = 0, $key = null, $master = false)
+    public function setValue($name, $value, $section = 0, $key = null, $onMaster = false)
     {
-        if ($master) {
+        if ($onMaster) {
             $this->master->setValue($name, $value, $section, $key);
         } else {
             $this->overrider->setValue($name, $value, $section, $key);
+        }
+    }
+
+    /**
+     * modify several options in ini files.
+     *
+     * @param array  $value    associated array with key=>value
+     * @param string $section  the section where to set the item. 0 is the global section
+     * @param bool   $onMaster if true, change the values in the master file, else change
+     *                         the values in the overrider file (default)
+     */
+    public function setValues($values, $section = 0, $onMaster = false)
+    {
+        if ($onMaster) {
+            $this->master->setValues($values, $section);
+        } else {
+            $this->overrider->setValues($values, $section);
         }
     }
 
@@ -92,6 +109,26 @@ class MultiIniModifier
 
             return $val;
         }
+    }
+
+    /**
+     * remove an option from the two ini file. It can remove an entire section if you give
+     * an empty value as $name, and a $section name.
+     *
+     * @param string $name                  the name of the option to remove, or null to remove an entire section
+     * @param string $section               the section where to remove the value, or the section to remove
+     * @param int    $key                   for option which is an item of array, the key in the array
+     * @param bool   $removePreviousComment if a comment is before the value, if true, it removes also the comment
+     * @param bool   $masterOnly            if true, it removes the value only from the master file, else
+     *                                      from both.
+     */
+    public function removeValue($name, $section = 0, $key = null, $removePreviousComment = true, $masterOnly = false)
+    {
+        $this->master->removeValue($name, $section, $key, $removePreviousComment);
+        if ($masterOnly) {
+            return;
+        }
+        $this->overrider->removeValue($name, $section, $key, $removePreviousComment);
     }
 
     /**
