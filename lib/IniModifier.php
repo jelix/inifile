@@ -16,7 +16,7 @@ namespace Jelix\IniFile;
  * inside values. it doesn't support quotes inside values, because parse_ini_file
  * is totally bugged, depending cases.
  */
-class IniModifier
+class IniModifier implements IniModifierInterface
 {
     /**
      * @const integer token type for whitespaces
