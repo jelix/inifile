@@ -112,6 +112,33 @@ class MultiIniModifier
     }
 
     /**
+     * return all values of a section from the both ini files.
+     *
+     * @param string $section the section from wich we want values. 0 is the global section
+     *
+     * @return array the list of values, $key=>$value
+     */
+    public function getValues($section=0) {
+        $masterValues = $this->master->getValues($section);
+        $overValues = $this->overrider->getValues($section);
+
+        foreach ($overValues as $key => &$value)
+        {
+            if (!isset($masterValues[$key])) {
+                $masterValues[$key] = $value;
+                continue;
+            }
+            if (is_array($value) && is_array($masterValues[$key])) {
+                $masterValues[$key] = array_merge($masterValues[$key], $value);
+            }
+            else {
+                $masterValues[$key] = $value;
+            }
+        }
+        return $masterValues;
+    }
+
+    /**
      * remove an option from the two ini file. It can remove an entire section if you give
      * an empty value as $name, and a $section name.
      *

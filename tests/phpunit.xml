@@ -3,6 +3,7 @@
   <testsuites>
     <testsuite name="Ini tools">
       <file>IniModifierTest.php</file>
+      <file>MultiIniModifierTest.php</file>
     </testsuite>
   </testsuites>
 </phpunit>
