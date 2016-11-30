@@ -8,6 +8,8 @@
 use \Jelix\IniFile\IniModifier as IniModifier;
 use \Jelix\IniFile\MultiIniModifier as MultiIniModifier;
 
+define('TEMP_PATH', __DIR__.'/temp/');
+
 class testIniFileModifier extends IniModifier {
 
     function __construct($filename = '') {

@@ -111,14 +111,17 @@ class IniModifier implements IniModifierInterface
                 } else {
                     $currentValue[2] .= $line."\n";
                 }
-            } elseif (preg_match('/^\s*([a-z0-9_.-]+)(\[\])?\s*=\s*(")?([^"]*)(")?(\s*)/i', $line, $m)) {
+            } elseif (preg_match('/^\s*([\\w0-9_.\\-]+)(\\[[^\\[\\]]*\\])?\s*=\s*(")?([^"]*)(")?(\s*)/ui', $line, $m)) {
                 list($all, $name, $foundkey, $firstquote, $value, $secondquote, $lastspace) = $m;
 
                 if ($foundkey != '') {
-                    if (isset($arrayContents[$currentSection][$name])) {
-                        $key = count($arrayContents[$currentSection][$name]);
-                    } else {
-                        $key = 0;
+                    $key = substr($foundkey, 1, -1);
+                    if ($key == '') {
+                        if (isset($arrayContents[$currentSection][$name])) {
+                            $key = count($arrayContents[$currentSection][$name]);
+                        } else {
+                            $key = 0;
+                        }
                     }
                     $currentValue = array(self::TK_ARR_VALUE, $name, $value, $key);
                     $arrayContents[$currentSection][$name][$key] = $value;
@@ -180,8 +183,10 @@ class IniModifier implements IniModifierInterface
 
                 // if it is an array value, and if the key doesn't correspond
                 if ($item[0] == self::TK_ARR_VALUE && $key !== null) {
-                    if ($item[3] != $key || $key === '') {
-                        $lastKey = $item[3];
+                    if ($item[3] !== $key || $key === '') {
+                        if (is_numeric($item[3])) {
+                            $lastKey = $item[3];
+                        }
                         continue;
                     }
                 }
@@ -211,12 +216,14 @@ class IniModifier implements IniModifierInterface
             if ($key === null) {
                 $this->content[$section][] = array(self::TK_VALUE, $name, $value);
             } else {
-                if ($lastKey != -1) {
-                    ++$lastKey;
-                } else {
-                    $lastKey = 0;
+                if ($key === '') {
+                    if ($lastKey != -1) {
+                        $key = ++$lastKey;
+                    } else {
+                        $key = 0;
+                    }
                 }
-                $this->content[$section][] = array(self::TK_ARR_VALUE, $name, $value, $lastKey);
+                $this->content[$section][] = array(self::TK_ARR_VALUE, $name, $value, $key);
             }
         }
 
@@ -233,10 +240,11 @@ class IniModifier implements IniModifierInterface
     {
         foreach ($values as $name => $val) {
             if (is_array($val)) {
-                // let's ignore key values, we don't want them
-                $i = 0;
-                foreach ($val as $arval) {
-                    $this->setValue($name, $arval, $section, $i++);
+                foreach ($val as $k => $arval) {
+                    if (is_string($k) && !preg_match('/^[^\\[\\]]*$/', $k)) {
+                        throw new Exception("Invalid key $k for the value $name");
+                    }
+                    $this->setValue($name, $arval, $section, $k);
                 }
             } else {
                 $this->setValue($name, $val, $section);
@@ -552,7 +560,13 @@ class IniModifier implements IniModifierInterface
                         $content .= $item[1].'='.$this->getIniValue($item[2])."\n";
                     break;
                   case self::TK_ARR_VALUE:
-                        $content .= $item[1].'[]='.$this->getIniValue($item[2])."\n";
+                      if (is_numeric($item[3])) {
+                          $content .= $item[1].'[]='.$this->getIniValue($item[2])."\n";
+                      }
+                      else {
+                          $content .= $item[1].'['.$item[3].']='.$this->getIniValue($item[2])."\n";
+                      }
+
                     break;
                 }
             }
@@ -679,6 +693,13 @@ class IniModifier implements IniModifierInterface
                             $lastNonValues = -1;
                             continue;
                         }
+                        if ($item[0] == self::TK_ARR_VALUE && $item2[0] == $item[0]) {
+                            if ($item[3] !== $item2[3]) {
+                                $lastNonValues = -1;
+                                continue;
+                            }
+                        }
+
                         $found = true;
                         $this->content[$sectionTarget][$j][2] = $item[2];
                         $this->modified = true;

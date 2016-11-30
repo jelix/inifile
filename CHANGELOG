@@ -1,0 +1,19 @@
+Changelog
+
+2.1
+===
+
+- Support of associative arrays like
+
+```
+foo[mykey]=bar
+foo[otherkey]=baz
+```
+
+
+2.0
+===
+
+- IniModifier and MultiInitModifier share the same interface
+- No more parameter '$onMaster' on methods. Replace by methods
+  named `<something>OnMaster()`.
