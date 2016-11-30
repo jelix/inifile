@@ -664,6 +664,7 @@ class IniModifier implements IniModifierInterface
     protected function mergeValues($values, $sectionTarget)
     {
         $previousItems = array();
+        $arrayValuesToReplace = array();
         // if options already exists, just change their values.
         // if options don't exist, add them to the section, with
         // comments and whitespace
@@ -701,8 +702,18 @@ class IniModifier implements IniModifierInterface
                         }
 
                         $found = true;
-                        $this->content[$sectionTarget][$j][2] = $item[2];
                         $this->modified = true;
+                        if ($item2[0] != $item[0]) {
+                            // same name, but not the same type
+                            if ($item2[0] == self::TK_VALUE) {
+                                $this->content[$sectionTarget][$j] = $item;
+                            }
+                            else {
+                                $arrayValuesToReplace[$item[1]] = $item[2];
+                            }
+                            continue;
+                        }
+                        $this->content[$sectionTarget][$j][2] = $item[2];
                         break;
                     }
                     if (!$found) {
@@ -717,6 +728,9 @@ class IniModifier implements IniModifierInterface
                     $previousItems = array();
                     break;
             }
+        }
+        foreach ($arrayValuesToReplace as $name => $value) {
+            $this->setValue($name, $value, $sectionTarget);
         }
     }
 

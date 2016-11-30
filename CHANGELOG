@@ -3,12 +3,16 @@ Changelog
 2.1
 ===
 
+- Support of most of word characters in names
 - Support of associative arrays like
 
 ```
 foo[mykey]=bar
 foo[otherkey]=baz
 ```
+
+- fix merge of array values during import
+
 
 
 2.0

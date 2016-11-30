@@ -35,6 +35,11 @@ isvalid = on
 
 assoc[bb]=1978
 
+willbearray=yes
+
+willbestring[aa]=val1
+willbestring[bb]=val2
+
 ; super section
 [othersection]
 truc=machin2
@@ -64,9 +69,14 @@ newlaurent=hello
 isvalid = on
 truc= false
 
+willbearray[]=ok
+willbearray[]=no
+
 supercar=ferrari
 
 assoc[aa]=0
+
+willbestring=a string
 
 [newsection]
 truc=machin2
@@ -110,7 +120,12 @@ isvalid=on
 
 assoc[bb]=1978
 
+willbearray[]=ok
+
+willbestring="a string"
+
 newlaurent=hello
+willbearray[]=no
 
 supercar=ferrari
 
