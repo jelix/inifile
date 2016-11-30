@@ -12,7 +12,7 @@ foo[otherkey]=baz
 ```
 
 - fix merge of array values during import
-
+- fix renaming of array values
 
 
 2.0

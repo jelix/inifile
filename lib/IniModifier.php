@@ -751,7 +751,9 @@ class IniModifier implements IniModifierInterface
             }
             $this->content[$section][$k][1] = $newName;
             $this->modified = true;
-            break;
+            if ($item[0] == self::TK_VALUE) {
+                break;
+            }
         }
 
         return true;
