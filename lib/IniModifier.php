@@ -138,9 +138,9 @@ class IniModifier implements IniModifierInterface
                     }
                     $this->content[$currentSection][] = $currentValue;
                 }
-            } elseif (preg_match('/^(\s*;.*)$/', $line, $m)) {
+            } elseif (preg_match('/^(\\s*;.*)$/', $line, $m)) {
                 $this->content[$currentSection][] = array(self::TK_COMMENT, $m[1]);
-            } elseif (preg_match('/^(\s*\[([a-z0-9_.\-@:]+)\]\s*)/i', $line, $m)) {
+            } elseif (preg_match('/^(\\s*\\[([\\w0-9_.\\-@:]+)\\]\\s*)/ui', $line, $m)) {
                 $currentSection = $m[2];
                 $this->content[$currentSection] = array(
                     array(self::TK_SECTION, $m[1]),
@@ -581,7 +581,7 @@ class IniModifier implements IniModifierInterface
 
     protected function getIniValue($value)
     {
-        if ($value === '' || is_numeric(trim($value)) || (preg_match("/^[\w-.]*$/", $value) && strpos("\n", $value) === false)) {
+        if ($value === '' || is_numeric(trim($value)) || (preg_match("/^[\\w-.]*$/u", $value) && strpos("\n", $value) === false)) {
             return $value;
         } elseif ($value === false) {
             $value = '0';
