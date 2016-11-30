@@ -395,7 +395,7 @@ class IniModifier implements IniModifierInterface
     public function getValue($name, $section = 0, $key = null)
     {
         if (!isset($this->content[$section])) {
-            return;
+            return null;
         }
         $arrayValue = array();
         $isArray = false;
@@ -432,13 +432,13 @@ class IniModifier implements IniModifierInterface
             return $arrayValue;
         }
 
-        return;
+        return null;
     }
 
     /**
      * return all values of a section in the ini file.
      *
-     * @param string $section the section from wich we want values. 0 is the global section
+     * @param string $section the section from which we want values. 0 is the global section
      *
      * @return array the list of values, $key=>$value
      */
@@ -601,7 +601,7 @@ class IniModifier implements IniModifierInterface
      * named with the value of prefix. If the section prefix is not given, the existing
      * sections and given section with the same name will be merged.
      *
-     * @param Jelix\IniFile\IniModifier $ini           an ini file modifier to merge with the current
+     * @param \Jelix\IniFile\IniModifier $ini           an ini file modifier to merge with the current
      * @param string                    $sectionPrefix the prefix to add to the section prefix
      * @param string                    $separator     the separator to add between the prefix and the old name
      *                                                 of the section
