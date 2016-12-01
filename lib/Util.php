@@ -4,7 +4,7 @@
  * @author     Loic Mathaud
  * @contributor Laurent Jouanneau
  *
- * @copyright  2006 Loic Mathaud, 2008-2015 Laurent Jouanneau
+ * @copyright  2006 Loic Mathaud, 2008-2016 Laurent Jouanneau
  *
  * @link        http://www.jelix.org
  * @licence  http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public Licence, see LICENCE file
@@ -23,7 +23,7 @@ class Util
      * @param string $filename the path and the name of the file to read
      * @param bool   $asObject true if the content should be returned as an object
      *
-     * @return array the content of the file or false
+     * @return object|false the content of the file or false if file does not exists
      */
     public static function read($filename, $asObject = false)
     {
@@ -39,18 +39,36 @@ class Util
     }
 
     /**
+     * Flag for merging. Directive whose name starts with '_' are not
+     * modified during a merge
+     */
+    const NOT_MERGE_PROTECTED_DIRECTIVE = 1;
+
+    /**
+     * Flag for merging. When directive are arrays with numerical keys, like
+     * `foo[]=bar` (here the directive foo), if the content to import contains
+     * also a directive of the same name, both array are merged. (By default, the
+     * array to import replace the original array).
+     *
+     * It does not change the behavior of the merge of associative arrays (like `foo[mykey]=bar`),
+     * for which there is always a normal merge.
+     */
+    const NORMAL_MERGE_ARRAY_VALUES_WITH_INTEGER_KEYS = 2;
+
+    /**
      * read an ini file and merge its parameters to the given object.
      * Useful to merge to config files.
      * Parameters whose name starts with a '_' are not merged.
      *
      * @param string $filename the path and the name of the file to read
      * @param object $content
+     * @param integer $flags a combination of constants NOT_MERGE_*, NORMAL_MERGE_*
      *
-     * @return array the content of the file or false
+     * @return object|false the content of the file or false if error during parsing the file
      *
      * @since 2.0
      */
-    public static function readAndMergeObject($filename, $content)
+    public static function readAndMergeObject($filename, $content, $flags = 0)
     {
         if (!file_exists($filename)) {
             return false;
@@ -61,16 +79,18 @@ class Util
             return false;
         }
 
-        return self::mergeIniObjectContents($content, $newContent);
+        return self::mergeIniObjectContents($content, $newContent, $flags);
     }
 
     /**
      * merge two simple StdClass object.
      *
-     * @param StdClass $baseContent     the object which receives new properties
-     * @param StdClass $contentToImport the object providing new properties
+     * @param object $baseContent     the object which receives new properties
+     * @param object $contentToImport the object providing new properties
+     * @param integer $flags a combination of constants NOT_MERGE_*, NORMAL_MERGE_*
+     * @return object $baseContent
      */
-    public static function mergeIniObjectContents($baseContent, $contentToImport)
+    public static function mergeIniObjectContents($baseContent, $contentToImport, $flags = 0)
     {
         $contentToImport = (array) $contentToImport;
 
@@ -80,11 +100,34 @@ class Util
                 continue;
             }
 
-            if ($k[1] == '_') {
+            if (($flags & self::NOT_MERGE_PROTECTED_DIRECTIVE) && $k[0] == '_') {
                 continue;
             }
             if (is_array($v)) {
-                $baseContent->$k = array_merge($baseContent->$k, $v);
+                // this is a section or a array value
+                if (!is_array($baseContent->$k)) {
+                    $baseContent->$k = $v;
+                }
+                else {
+                    if ($flags & self::NORMAL_MERGE_ARRAY_VALUES_WITH_INTEGER_KEYS) {
+                        if (self::hasOnlyIntegerKeys($v) && self::hasOnlyIntegerKeys($baseContent->$k)) {
+                            $baseContent->$k = array_merge($baseContent->$k, $v);
+                            continue;
+                        }
+                        $newbase = $baseContent->$k;
+                    }
+                    else {
+                        // first, in the case of an array value, clean the $base value, by removing all values with numerical keys
+                        // as it does not make sens to merge two simple arrays here.
+                        $newbase = array();
+                        foreach($baseContent->$k as $k2=>$v2) {
+                            if (is_string($k2)) {
+                                $newbase[$k2] = $v2;
+                            }
+                        }
+                    }
+                    $baseContent->$k = self::mergeSectionContent($newbase, $v, $flags);
+                }
             } else {
                 $baseContent->$k = $v;
             }
@@ -92,6 +135,51 @@ class Util
 
         return $baseContent;
     }
+
+    protected static function hasOnlyIntegerKeys(&$arr) {
+        foreach($arr as $k=>$v) {
+            if (!is_integer($k)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected static function mergeSectionContent($base, $toImport, $flags = 0) {
+
+        foreach ($toImport as $k => $v) {
+            if (!isset($base[$k])) {
+                $base[$k] = $v;
+                continue;
+            }
+
+            if (($flags & self::NOT_MERGE_PROTECTED_DIRECTIVE) && $k[0] == '_') {
+                continue;
+            }
+
+            if (is_array($v)) {
+                if ($flags & self::NORMAL_MERGE_ARRAY_VALUES_WITH_INTEGER_KEYS) {
+                    $newbase = $base[$k];
+                }
+                else {
+                    // first, clean the $base value, by removing all values with numerical keys
+                    // as it does not make sens to merge two simple arrays here.
+                    $newbase = array();
+                    foreach ($base[$k] as $k2 => $v2) {
+                        if (is_string($k2) && !is_numeric($k2)) {
+                            $newbase[$k2] = $v2;
+                        }
+                    }
+                }
+                // a section
+                $base[$k] = array_merge($newbase, $v);
+            } else {
+                $base[$k] = $v;
+            }
+        }
+        return $base;
+    }
+
 
     /**
      * write some data in an ini file
