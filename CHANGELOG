@@ -3,9 +3,9 @@ Changelog
 2.2
 ===
 
-- 
-- Add flags in Util methods to change the behavior of merge
-
+- Fix `Util.mergeIniObjectContents()` and `Util::readAndMergeObject()`
+  about the merge of array values with integer keys.
+- New flags for these methods have been added to change the behavior of merge
 
 2.1
 ===
