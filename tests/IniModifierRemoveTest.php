@@ -89,6 +89,103 @@ foo[]=ccc
         $this->assertEquals($result, $parser->generate());
     }
 
+
+
+    function testRemoveArray() {
+        $parser = new testIniFileModifier('');
+        $content = '
+string= "uuuuu"
+assoc[o]=buser
+string2= "aaabbb"
+assoc[oth]=buser
+assoc[oth2]=buser2
+afloatnumber=   5.098  
+
+[othersection]
+truc=machin2
+
+assoc[key1]=car
+assoc[otherkey]=bus
+
+[vla]
+foo[]=aaa
+foo[]=bbb
+foo[]=ccc
+
+
+';
+        $parser->testParse($content);
+        $expected = array(
+            0 => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_VALUE, 'string', 'uuuuu'),
+                array(IniModifier::TK_ARR_VALUE, 'assoc', 'buser', 'o'),
+                array(IniModifier::TK_VALUE, 'string2', 'aaabbb'),
+                array(IniModifier::TK_ARR_VALUE, 'assoc', 'buser', 'oth'),
+                array(IniModifier::TK_ARR_VALUE, 'assoc', 'buser2', 'oth2'),
+                array(IniModifier::TK_VALUE, 'afloatnumber', 5.098),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'othersection' => array(
+                array(IniModifier::TK_SECTION, "[othersection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin2'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_ARR_VALUE, 'assoc', 'car', 'key1'),
+                array(IniModifier::TK_ARR_VALUE, 'assoc', 'bus', 'otherkey'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'vla' => array(
+                array(IniModifier::TK_SECTION, "[vla]"),
+                array(IniModifier::TK_ARR_VALUE, 'foo', 'aaa', 0),
+                array(IniModifier::TK_ARR_VALUE, 'foo', 'bbb', 1),
+                array(IniModifier::TK_ARR_VALUE, 'foo', 'ccc', 2),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+            ),
+        );
+        $this->assertEquals($expected, $parser->getContent());
+
+        $parser->removeValue('assoc', 0, null, false);
+        $this->assertNull($parser->getValue('assoc'));
+
+        $parser->removeValue('foo','vla', null, false);
+        $this->assertNull($parser->getValue('foo','vla', 1));
+
+        $expected = array(
+            0 => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_VALUE, 'string', 'uuuuu'),
+                array(IniModifier::TK_WS, "--"),
+                array(IniModifier::TK_VALUE, 'string2', 'aaabbb'),
+                array(IniModifier::TK_WS, "--"),
+                array(IniModifier::TK_WS, "--"),
+                array(IniModifier::TK_VALUE, 'afloatnumber', 5.098),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'othersection' => array(
+                array(IniModifier::TK_SECTION, "[othersection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin2'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_ARR_VALUE, 'assoc', 'car', 'key1'),
+                array(IniModifier::TK_ARR_VALUE, 'assoc', 'bus', 'otherkey'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'vla' => array(
+                array(IniModifier::TK_SECTION, "[vla]"),
+                array(IniModifier::TK_WS, "--"),
+                array(IniModifier::TK_WS, "--"),
+                array(IniModifier::TK_WS, "--"),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+            ),
+        );
+        $this->assertEquals($expected, $parser->getContent());
+
+    }
+
+
     function testRemoveWithComment() {
         $parser = new testIniFileModifier('');
         $content = '
