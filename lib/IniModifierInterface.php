@@ -21,7 +21,7 @@ interface IniModifierInterface
      * it is created.
      *
      * @param string $name    the name of the option to modify
-     * @param string $value   the new value
+     * @param mixed  $value   the new value
      * @param string $section the section where to set the item. 0 is the global section
      * @param int    $key     for option which is an item of array, the key in the array. '' to just add a value in the array
      */

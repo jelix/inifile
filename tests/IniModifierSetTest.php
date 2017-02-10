@@ -278,6 +278,171 @@ foo[]=machine
         $this->assertEquals($expected, $parser->getContent());
     }
 
+
+    function testSetArrayValueWithArray()
+    {
+        $parser = $this->prepareParserSetValue();
+        // append an array value
+        $parser->setValue('name', 'toto', 'othersection', '');
+        $expected = array(
+            0 => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_COMMENT, "  ; a comment"),
+                array(IniModifier::TK_WS, "  "),
+                array(IniModifier::TK_VALUE, 'foo', 'bar'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'aSection' => array(
+                array(IniModifier::TK_SECTION, "[aSection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'othersection' => array(
+                array(IniModifier::TK_SECTION, "[othersection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin2'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_ARR_VALUE, 'name', 'toto', 0),
+            ),
+        );
+        $this->assertEquals($expected, $parser->getContent());
+
+        // now set a new value which is an array
+        $parser->setValue('name', array('black', 'brown', 'yellow'), 'othersection');
+        $expected = array(
+            0 => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_COMMENT, "  ; a comment"),
+                array(IniModifier::TK_WS, "  "),
+                array(IniModifier::TK_VALUE, 'foo', 'bar'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'aSection' => array(
+                array(IniModifier::TK_SECTION, "[aSection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'othersection' => array(
+                array(IniModifier::TK_SECTION, "[othersection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin2'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_ARR_VALUE, 'name', 'black', 0),
+                array(IniModifier::TK_ARR_VALUE, 'name', 'brown', 1),
+                array(IniModifier::TK_ARR_VALUE, 'name', 'yellow', 2),
+            ),
+        );
+        $this->assertEquals($expected, $parser->getContent());
+
+        // now change it by a smaller array
+        $parser->setValue('name', array('red', 'white'), 'othersection');
+        $expected = array(
+            0 => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_COMMENT, "  ; a comment"),
+                array(IniModifier::TK_WS, "  "),
+                array(IniModifier::TK_VALUE, 'foo', 'bar'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'aSection' => array(
+                array(IniModifier::TK_SECTION, "[aSection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'othersection' => array(
+                array(IniModifier::TK_SECTION, "[othersection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin2'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_ARR_VALUE, 'name', 'red', 0),
+                array(IniModifier::TK_ARR_VALUE, 'name', 'white', 1),
+                array(IniModifier::TK_WS, '--'),
+            ),
+        );
+        $this->assertEquals($expected, $parser->getContent());
+    }
+
+    function testModifyArrayValueWithArray()
+    {
+        $parser = new testIniFileModifier('');
+        $content = '
+  ; a comment
+  
+foo=bar
+
+[aSection]
+truc=machin
+mylist[]=hello
+ddd=eee
+mylist[]=bar
+fff=ggg
+
+[othersection]
+truc=machin2
+
+';
+        $parser->testParse($content);
+
+        // now set a new value which is an array
+        $parser->setValue('mylist', array('black', 'brown', 'yellow'), 'aSection');
+        $expected = array(
+            0 => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_COMMENT, "  ; a comment"),
+                array(IniModifier::TK_WS, "  "),
+                array(IniModifier::TK_VALUE, 'foo', 'bar'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'aSection' => array(
+                array(IniModifier::TK_SECTION, "[aSection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_ARR_VALUE, 'mylist', 'black', 0),
+                array(IniModifier::TK_VALUE, 'ddd', 'eee'),
+                array(IniModifier::TK_ARR_VALUE, 'mylist', 'brown', 1),
+                array(IniModifier::TK_VALUE, 'fff', 'ggg'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_ARR_VALUE, 'mylist', 'yellow', 2),
+            ),
+            'othersection' => array(
+                array(IniModifier::TK_SECTION, "[othersection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin2'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+            ),
+        );
+        $this->assertEquals($expected, $parser->getContent());
+
+        // now change it by a smaller array
+        $parser->setValue('mylist', array('red'), 'aSection');
+        $expected = array(
+            0 => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_COMMENT, "  ; a comment"),
+                array(IniModifier::TK_WS, "  "),
+                array(IniModifier::TK_VALUE, 'foo', 'bar'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'aSection' => array(
+                array(IniModifier::TK_SECTION, "[aSection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_ARR_VALUE, 'mylist', 'red', 0),
+                array(IniModifier::TK_VALUE, 'ddd', 'eee'),
+                array(IniModifier::TK_WS, '--'),
+                array(IniModifier::TK_VALUE, 'fff', 'ggg'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, '--')
+            ),
+            'othersection' => array(
+                array(IniModifier::TK_SECTION, "[othersection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin2'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+            ),
+        );
+        $this->assertEquals($expected, $parser->getContent());
+
+    }
+
     function testSetAssocArrayValue()
     {
         $parser = new testIniFileModifier('');
@@ -380,11 +545,11 @@ truc=true
 
 ; super section
 [the_section]
-foo[]=aaa
 
 truc=machin
 bidule=1
 truck=1
+foo[]=aaa
 foo[]=bbb
 foo[machin]=ccc
 ';
@@ -415,6 +580,5 @@ assoc[ov]="other value"
 ';
         $this->assertEquals($expected, $ini->generate());
     }
-
 
 }

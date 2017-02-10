@@ -162,6 +162,25 @@ class IniModifier implements IniModifierInterface
      */
     public function setValue($name, $value, $section = 0, $key = null)
     {
+        if (!preg_match('/^[^\\[\\]]*$/', $name)) {
+            throw new \Exception("Invalid value name $name");
+        }
+
+        if (is_array($value)) {
+            if ($key !== null) {
+                throw new \Exception("You cannot indicate a key for an array value");
+            }
+            $this->_setArrayValue($name, $value, $section);
+        }
+        else {
+            $this->_setValue($name, $value, $section, $key);
+        }
+    }
+
+    protected function _setValue($name, $value, $section = 0, $key = null) {
+        if (is_string($key) && !preg_match('/^[^\\[\\]]*$/', $key)) {
+            throw new \Exception("Invalid key $key for the value $name");
+        }
         $foundValue = false;
         $lastKey = -1; // last key in an array value
         if (isset($this->content[$section])) {
@@ -230,6 +249,44 @@ class IniModifier implements IniModifierInterface
         $this->modified = true;
     }
 
+    protected function _setArrayValue($name, $value, $section = 0) {
+
+        $foundKeys = array_combine(array_keys($value),
+                                   array_fill(0, count($value), false));
+        if (isset($this->content[$section])) {
+            foreach ($this->content[$section] as $k => $item) {
+                // if the item is not a value or an array value, or not the same name
+                if (($item[0] != self::TK_VALUE && $item[0] != self::TK_ARR_VALUE)
+                    || $item[1] != $name) {
+                    continue;
+                }
+
+                if ($item[0] == self::TK_ARR_VALUE) {
+                    if (isset($value[$item[3]])) {
+                        $foundKeys[$item[3]] = true;
+                        $this->content[$section][$k][2] = $value[$item[3]];
+                    }
+                    else {
+                        $this->content[$section][$k] = array(self::TK_WS, '--');
+                    }
+                }
+                else {
+                    $this->content[$section][$k] = array(self::TK_WS, '--');
+                }
+            }
+        } else {
+            $this->content[$section] = array(array(self::TK_SECTION, '['.$section.']'));
+        }
+
+        foreach($value as $k => $v) {
+            if (!$foundKeys[$k]) {
+                $this->content[$section][] = array(self::TK_ARR_VALUE, $name, $v, $k);
+            }
+        }
+        $this->modified = true;
+    }
+
+
     /**
      * modify several options in the ini file.
      *
@@ -239,16 +296,7 @@ class IniModifier implements IniModifierInterface
     public function setValues($values, $section = 0)
     {
         foreach ($values as $name => $val) {
-            if (is_array($val)) {
-                foreach ($val as $k => $arval) {
-                    if (is_string($k) && !preg_match('/^[^\\[\\]]*$/', $k)) {
-                        throw new Exception("Invalid key $k for the value $name");
-                    }
-                    $this->setValue($name, $arval, $section, $k);
-                }
-            } else {
-                $this->setValue($name, $val, $section);
-            }
+            $this->setValue($name, $val, $section);
         }
     }
 
