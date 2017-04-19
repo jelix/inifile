@@ -5,8 +5,9 @@
 * @link        http://www.jelix.org
 * @licence     GNU Lesser General Public Licence see LICENCE file or http://www.gnu.org/licenses/lgpl.html
 */
-use \Jelix\IniFile\IniModifier as IniModifier;
-use \Jelix\IniFile\MultiIniModifier as MultiIniModifier;
+use \Jelix\IniFile\IniModifier;
+use \Jelix\IniFile\MultiIniModifier;
+use \Jelix\IniFile\IniModifierArray;
 
 define('TEMP_PATH', __DIR__.'/temp/');
 
@@ -32,4 +33,9 @@ class testMultiIniFileModifier extends MultiIniModifier {
     function generateMaster(){ return $this->master->generateIni(); }
 
     function generateOverrider(){ return $this->overrider->generateIni(); }
+}
+
+class testIniFileModifierArray extends IniModifierArray {
+
+    function generateIni($index){ return $this->modifiers[$index]->generateIni(); }
 }

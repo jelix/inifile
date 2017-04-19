@@ -9,6 +9,7 @@
       <file>IniModifierRenameTest.php</file>
       <file>IniModifierImportTest.php</file>
       <file>MultiIniModifierTest.php</file>
+      <file>IniModifierArrayTest.php</file>
       <file>mergeIniObjectTest.php</file>
     </testsuite>
   </testsuites>

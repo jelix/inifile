@@ -44,4 +44,41 @@ arr[]=beautiful
                             'arr'=>array('hello', 'world', 'beautiful'),
                             'car'=>'mercedes'), $values);
     }
+    function testGetValue() {
+        $one = new testIniFileModifier();
+        $two = new testIniFileModifier();
+        $one->testParse(
+            '
+deep=value
+otherdeep=value
+[section]
+foo=bar
+arr[]=hello
+arr[]=world
+car=mercedes
+'
+        );
+
+        $two->testParse(
+            '
+z=b
+he=ho
+otherdeep= newvalue
+[section]
+foo=baz
+arr[]=beautiful
+'
+        );
+
+
+        $multi = new testMultiIniFileModifier($one, $two);
+        $this->assertEquals('ho', $multi->getValue('he'));
+        $this->assertEquals('b', $multi->getValue('z'));
+        $this->assertEquals('value', $multi->getValue('deep'));
+        $this->assertEquals('newvalue', $multi->getValue('otherdeep'));
+
+        $this->assertEquals('baz', $multi->getValue('foo', 'section'));
+        $this->assertEquals(array('beautiful'), $multi->getValue('arr', 'section'));
+        $this->assertEquals('mercedes', $multi->getValue('car', 'section'));
+    }
 }
