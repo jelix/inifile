@@ -1,5 +1,10 @@
 Changelog
 
+2.3.0
+=====
+
+- New IniModifierArray object. It allows to work on a list of IniModifier objects as the same time
+
 2.2.1
 =====
 

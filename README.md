@@ -98,6 +98,8 @@ See the class to learn about other methods and options.
 The ```\Jelix\IniFile\MultiIniModifier``` allows to load two ini files at the same time,
 where the second one "overrides" values of the first one.
 
+The ```\Jelix\IniFile\IniModifierArray``` allows to load several files at the 
+same time, and to manage their values as if files were merged.
 
 The ```\Jelix\IniFile\Util``` contains simple methods to read, write and merge ini files.
 These are just wrappers around ```parse_ini_file()```.
