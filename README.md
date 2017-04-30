@@ -13,7 +13,7 @@ composer require "jelix/inifile"
 
 # Usage
 
-The ```\Jelix\IniFile\IniModifier``` class allow to read an ini file, to modify its
+The ```\Jelix\IniFile\IniModifier``` class allows to read an ini file, to modify its
 content, and save it by preserving its comments and empty lines.
 
 Don't use this class to just read content. Use instead ```\Jelix\IniFile\Util``` or
