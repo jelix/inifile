@@ -14,20 +14,18 @@ class IniModifierTest extends PHPUnit_Framework_TestCase {
 
     public function testParseFile()
     {
-        $parser = new testIniFileModifier('');
         $content = 'foo=bar';
         $expected = array(
             0 => array(
                 array(IniModifier::TK_VALUE, 'foo', 'bar'),
             ),
         );
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $this->assertEquals($expected, $parser->getContent());
     }
 
     public function testParseFileComment()
     {
-        $parser = new testIniFileModifier('');
         $content = '
   ; a comment
   
@@ -43,13 +41,12 @@ foo=bar
             ),
         );
 
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $this->assertEquals($expected, $parser->getContent());
     }
 
     public function testParseFileSection()
     {
-        $parser = new testIniFileModifier('');
         $content = '
   ; a comment
   
@@ -73,13 +70,12 @@ truc=machin
             ),
         );
 
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $this->assertEquals($expected, $parser->getContent());
     }
 
     public function testParseFileSectionCoolName()
     {
-        $parser = new testIniFileModifier('');
         $content = '
   ; a comment
   
@@ -115,14 +111,13 @@ truc=machin2
             ),
         );
 
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $this->assertEquals($expected, $parser->getContent());
 
     }
 
     public function testParseFileArray()
     {
-        $parser = new testIniFileModifier('');
         $content ='
 foo[]=bar
 example=1
@@ -138,13 +133,12 @@ foo[]=machine
             ),
         );
 
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $this->assertEquals($expected, $parser->getContent());
     }
 
     public function testParseFileAssocArray()
     {
-        $parser = new testIniFileModifier('');
         $content ='
 foo[key1]=bar
 example=1
@@ -160,12 +154,11 @@ foo[key2]=machine
             ),
         );
 
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $this->assertEquals($expected, $parser->getContent());
     }
     public function testParseFileMixedArray()
     {
-        $parser = new testIniFileModifier('');
         $content ='
 foo[key1]=bar
 example=1
@@ -181,7 +174,7 @@ foo[]=machine
             ),
         );
 
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $this->assertEquals($expected, $parser->getContent());
 
         $content ='
@@ -201,13 +194,12 @@ foo[]=hello
             ),
         );
 
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $this->assertEquals($expected, $parser->getContent());
 
     }
 
     function testSave() {
-            $parser = new testIniFileModifier('');
         $content = '
   ; a comment
   
@@ -262,7 +254,7 @@ case[ab]=bbb
 case[key3]=ccc
 
 ';
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $this->assertEquals($result, $parser->generate() );
 
         file_put_contents(TEMP_PATH.'test_IniModifier.html_cli.php', $content);

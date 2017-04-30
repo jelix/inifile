@@ -5,28 +5,20 @@
 * @link        http://www.jelix.org
 * @licence     GNU Lesser General Public Licence see LICENCE file or http://www.gnu.org/licenses/lgpl.html
 */
-use \Jelix\IniFile\IniModifier as IniModifier;
-use \Jelix\IniFile\MultiIniModifier as MultiIniModifier;
 
 require_once(__DIR__.'/lib.php');
 
 class MultiIniModifierTest extends PHPUnit_Framework_TestCase {
 
     function testGetValues() {
-        $master = new testIniFileModifier();
-        $overrider = new testIniFileModifier();
-        $master->testParse(
-'
+        $master = new testIniFileModifier('foo.ini', '
 [section]
 foo=bar
 arr[]=hello
 arr[]=world
 car=mercedes
-'
-        );
-
-        $overrider->testParse(
-'
+');
+        $overrider = new testIniFileModifier('foo.ini', '
 he=ho
 [section]
 foo=baz
@@ -45,10 +37,7 @@ arr[]=beautiful
                             'car'=>'mercedes'), $values);
     }
     function testGetValue() {
-        $one = new testIniFileModifier();
-        $two = new testIniFileModifier();
-        $one->testParse(
-            '
+        $one = new testIniFileModifier('foo.ini', '
 deep=value
 otherdeep=value
 [section]
@@ -56,20 +45,15 @@ foo=bar
 arr[]=hello
 arr[]=world
 car=mercedes
-'
-        );
-
-        $two->testParse(
-            '
+');
+        $two = new testIniFileModifier('foo.ini', '
 z=b
 he=ho
 otherdeep= newvalue
 [section]
 foo=baz
 arr[]=beautiful
-'
-        );
-
+');
 
         $multi = new testMultiIniFileModifier($one, $two);
         $this->assertEquals('ho', $multi->getValue('he'));

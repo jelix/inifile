@@ -15,7 +15,6 @@ class IniModifierSetTest extends PHPUnit_Framework_TestCase
 
     protected function prepareParserSetValue()
     {
-        $parser = new testIniFileModifier('');
         $content = '
   ; a comment
   
@@ -49,7 +48,8 @@ truc=machin2
             ),
         );
 
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
+
         $this->assertEquals($expected, $parser->getContent());
         return $parser;
     }
@@ -211,7 +211,6 @@ truc=machin2
 
     function testSetArrayValue2()
     {
-        $parser = new testIniFileModifier('');
         $content = '
 foo[]=bar
 example=1
@@ -227,7 +226,7 @@ foo[]=machine
             ),
         );
 
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $this->assertEquals($expected, $parser->getContent());
 
         $parser->setValue('foo', 'bla', 0, '');
@@ -364,7 +363,6 @@ foo[]=machine
 
     function testModifyArrayValueWithArray()
     {
-        $parser = new testIniFileModifier('');
         $content = '
   ; a comment
   
@@ -381,7 +379,7 @@ fff=ggg
 truc=machin2
 
 ';
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
 
         // now set a new value which is an array
         $parser->setValue('mylist', array('black', 'brown', 'yellow'), 'aSection');
@@ -445,7 +443,6 @@ truc=machin2
 
     function testSetAssocArrayValue()
     {
-        $parser = new testIniFileModifier('');
         $content = '
 foo[]=bar
 example=1
@@ -463,7 +460,7 @@ foo[]=vla
             ),
         );
 
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $this->assertEquals($expected, $parser->getContent());
 
         $parser->setValue('foo', 'bla', 0, 'champ');
@@ -524,8 +521,7 @@ truc=true
 [the_section]
 foo= z
 ';
-        $ini = new testIniFileModifier('');
-        $ini->testParse($content);
+        $ini = new testIniFileModifier('foo.ini', $content);
         $ini->setValues(
             array(
                 'truc'=>'machin',
@@ -564,8 +560,7 @@ foo[]=baz
 assoc[key1]=car
 assoc[otherkey]=bus
 ';
-        $ini = new testIniFileModifier('');
-        $ini->testParse($content);
+        $ini = new testIniFileModifier('foo.ini', $content);
         $ini->setValue('foo', 'other value', 0, '');
         $ini->setValue('foo', 'five', 0, 5);
         $ini->setValue('assoc', 'other value', 0, 'ov');

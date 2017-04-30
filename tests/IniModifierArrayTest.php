@@ -11,26 +11,19 @@ require_once(__DIR__.'/lib.php');
 class IniModifierArrayTest extends PHPUnit_Framework_TestCase {
 
     function testGetValues() {
-        $master = new testIniFileModifier();
-        $overrider = new testIniFileModifier();
-        $master->testParse(
-'
+        $master = new testIniFileModifier('foo.ini', '
 [section]
 foo=bar
 arr[]=hello
 arr[]=world
 car=mercedes
-'
-        );
-
-        $overrider->testParse(
-'
+');
+        $overrider = new testIniFileModifier('foo.ini', '
 he=ho
 [section]
 foo=baz
 arr[]=beautiful
-'
-        );
+');
 
         $multi = new testIniFileModifierArray(array($master, $overrider));
         $values = $multi->getValues();
@@ -44,11 +37,7 @@ arr[]=beautiful
     }
 
     protected function getModifiersArray() {
-        $one = new testIniFileModifier();
-        $two = new testIniFileModifier();
-        $three = new testIniFileModifier();
-        $one->testParse(
-            '
+        $one = new testIniFileModifier('foo.ini', '
 deep=value
 otherdeep=value
 [section]
@@ -56,31 +45,22 @@ foo=bar
 arr[]=hello
 arr[]=world
 car=mercedes
-'
-        );
-
-        $two->testParse(
-            '
+');
+        $two = new testIniFileModifier('foo.ini', '
 z=b
 he=ho
 otherdeep= newvalue
 [section]
 foo=baz
 arr[]=beautiful
-'
-        );
-
-        $three->testParse(
-            '
+');
+        $three = new testIniFileModifier('foo.ini', '
             
 he=klo
 [section]
 arr[]=zoli
 happy=new year
-'
-        );
-
-
+');
         return new testIniFileModifierArray(array($one, 'two'=>$two, $three));
     }
 

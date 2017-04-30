@@ -13,7 +13,7 @@ require_once(__DIR__.'/lib.php');
 class IniModifierRemoveTest extends PHPUnit_Framework_TestCase {
 
     function testRemove() {
-        $parser = new testIniFileModifier('');
+
         $content = '
   ; a comment
   
@@ -45,7 +45,7 @@ foo[]=ccc
 
 
 ';
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $parser->removeValue('anumber', 0, null, false);
         $this->assertNull($parser->getValue('anumber'));
 
@@ -92,7 +92,6 @@ foo[]=ccc
 
 
     function testRemoveArray() {
-        $parser = new testIniFileModifier('');
         $content = '
 string= "uuuuu"
 assoc[o]=buser
@@ -114,7 +113,7 @@ foo[]=ccc
 
 
 ';
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $expected = array(
             0 => array(
                 array(IniModifier::TK_WS, ""),
@@ -187,7 +186,6 @@ foo[]=ccc
 
 
     function testRemoveWithComment() {
-        $parser = new testIniFileModifier('');
         $content = '
   ; a comment <?php die()
   
@@ -219,7 +217,7 @@ foo[]=ccc
 
 
 ';
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $parser->removeValue('anumber', 0, null, true);
         $parser->removeValue('laurent','aSection', null, true);
         $parser->removeValue('foo','vla', 1, true);
@@ -250,10 +248,6 @@ foo[]=ccc
         $this->assertEquals($result, $parser->generate());
 
 
-
-
-
-        $parser = new testIniFileModifier('');
         $content = '
 string=uuuuu
 
@@ -266,7 +260,7 @@ string2=aaa
 afloatnumber=5.098  
 
 ';
-        $parser->testParse($content);
+        $parser = new testIniFileModifier('foo.ini', $content);
         $parser->removeValue('string2', 0, null, true);
 
         $result = '

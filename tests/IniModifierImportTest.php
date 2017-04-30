@@ -13,7 +13,7 @@ require_once(__DIR__.'/lib.php');
 class IniModifierImportTest extends PHPUnit_Framework_TestCase {
 
     function testImport() {
-        $ini = new testIniFileModifier('');
+
         $content = '
   ; a comment <?php die()
   
@@ -51,9 +51,8 @@ foo[]=bbb
 foo[]=ccc
 
 ';
-        $ini->testParse($content);
+        $ini = new testIniFileModifier('foo.ini', $content);
 
-        $ini2 = new testIniFileModifier('');
         $content2 = '
 
 ; my comment
@@ -90,7 +89,7 @@ foo[]=ccc
 arr[a]=f
 
 ';
-        $ini2->testParse($content2);
+        $ini2 = new testIniFileModifier('foo.ini', $content2);
 
         $ini->import($ini2);
 
@@ -161,7 +160,6 @@ arr[a]=f
 
 
     function testImportRename() {
-        $ini = new testIniFileModifier('');
         $content = '
   ; a comment <?php die()
   
@@ -192,9 +190,8 @@ foo[]=bbb
 foo[]=ccc
 
 ';
-        $ini->testParse($content);
+        $ini = new testIniFileModifier('foo.ini', $content);
 
-        $ini2 = new testIniFileModifier('');
         $content2 = '
 
 ; my comment
@@ -217,7 +214,7 @@ truc=machin3
 truck=on
 
 ';
-        $ini2->testParse($content2);
+        $ini2 = new testIniFileModifier('foo.ini', $content2);
 
         $ini->import($ini2, 'blob');
 
@@ -275,11 +272,8 @@ supercar=ferrari
 
 
 
-        $ini = new testIniFileModifier('');
-        $ini->testParse($content);
-
-        $ini2 = new testIniFileModifier('');
-        $ini2->testParse($content2);
+        $ini = new testIniFileModifier('foo.ini', $content);
+        $ini2 = new testIniFileModifier('foo.ini', $content2);
 
         $ini->import($ini2, 'blob', ':');
         $result = '

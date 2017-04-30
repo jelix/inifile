@@ -24,6 +24,26 @@ class IniModifier extends IniReader implements IniModifierInterface
     protected $modified = false;
 
     /**
+     * IniModifier constructor.
+     * @param string $filename the file from which the content should be readed/written
+     * @param string $initialContent if the file does not exists, it takes the given content
+     *   as initial content.
+     */
+    public function __construct($filename, $initialContent = '')
+    {
+        if (!$filename) {
+            throw new IniInvalidArgumentException("Filename should not be empty");
+        }
+        $this->filename = $filename;
+        if (file_exists($filename) && is_file($filename)) {
+            $this->parse(preg_split("/(\r\n|\n|\r)/", file_get_contents($filename)));
+        }
+        else if ($initialContent != '') {
+            $this->parse(preg_split("/(\r\n|\n|\r)/", $initialContent));
+        }
+    }
+
+    /**
      * modify an option in the ini file. If the option doesn't exist,
      * it is created.
      *

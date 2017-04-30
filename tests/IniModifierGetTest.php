@@ -13,8 +13,7 @@ require_once(__DIR__.'/lib.php');
 class IniModifierGetTest extends PHPUnit_Framework_TestCase {
 
     function testGetValue() {
-        $parser = new testIniFileModifier('');
-        $content = '
+        $parser = new testIniFileModifier('foo.ini', '
   ; a comment
   
 foo=bar
@@ -40,8 +39,8 @@ foo[]=aaa
 foo[]=bbb
 foo[]=ccc
 
-';
-        $parser->testParse($content);
+');
+
         $this->assertEquals($parser->getValue('foo'), 'bar' );
         $this->assertEquals($parser->getValue('anumber'), 98 );
         $this->assertEquals($parser->getValue('string'), 'uuuuu' );
@@ -80,8 +79,7 @@ foo[]=bbb
 foo[]=ccc
 ';
 
-        $ini = new testIniFileModifier('');
-        $ini->testParse($content);
+        $ini = new testIniFileModifier('foo.ini', $content);
 
         $values = $ini->getValues('the_section');
         $expected = array('truc'=>'machin', 'bidule'=>1, 'truck'=>true, 'foo'=>array('aaa', 'bbb', 'ccc'));
@@ -113,8 +111,7 @@ foo[key2]=bbb
 foo[key3]=ccc
 ';
 
-        $ini = new testIniFileModifier('');
-        $ini->testParse($content);
+        $ini = new testIniFileModifier('foo.ini', $content);
 
         $values = $ini->getValues('the_section');
         $expected = array('truc'=>'machin', 'bidule'=>1, 'truck'=>true, 'foo'=>array('key1'=>'aaa', 'key2'=>'bbb', 'key3'=>'ccc'));

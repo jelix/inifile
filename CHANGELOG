@@ -5,7 +5,8 @@ Changelog
 
 - new IniReader object, to read only files, to have "read only modifiers" in IniModifierArray
 - Exceptions are now Exceptions from the library, IniInvalidArgumentException and IniException
-
+- IniModifier does not require anymore an existing file, and can create a new
+  file with a given content.
 
 2.3.0
 =====

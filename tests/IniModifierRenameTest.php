@@ -13,7 +13,6 @@ require_once(__DIR__.'/lib.php');
 class IniModifierRenameTest extends PHPUnit_Framework_TestCase {
 
     public function testRenameSection() {
-        $ini = new testIniFileModifier('');
         $content = '
   ; a comment <?php die()
   
@@ -45,7 +44,7 @@ foo[]=ccc
 
 
 ';
-        $ini->testParse($content);
+        $ini = new testIniFileModifier('foo.ini', $content);
         $ini->renameValue('string', 'vuvuzela');
         $ini->renameSection('aSection', 'beautiful');
         $result = '

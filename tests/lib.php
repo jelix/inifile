@@ -13,13 +13,6 @@ define('TEMP_PATH', __DIR__.'/temp/');
 
 class testIniFileModifier extends IniModifier {
 
-    function __construct($filename = '') {
-      if($filename !='') parent::__construct($filename);
-    }
-
-    function testParse($content) {
-       $this->parse(explode("\n", $content));
-    }
     function getContent() {
        return $this->content;
     }
