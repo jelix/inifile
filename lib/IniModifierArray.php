@@ -18,17 +18,17 @@ namespace Jelix\IniFile;
 class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \ArrayAccess, \Countable
 {
     /**
-     * @var \Jelix\IniFile\IniModifierInterface[]
+     * @var \Jelix\IniFile\IniReaderInterface[]
      */
     protected $modifiers;
 
     /**
-     * @var \Jelix\IniFile\IniModifierInterface[]
+     * @var \Jelix\IniFile\IniReaderInterface[]
      */
     protected $reversedModifiers;
 
     /**
-     * @var \Jelix\IniFile\IniModifierInterface
+     * @var \Jelix\IniFile\IniReaderInterface
      */
     protected $lastModifier;
 
@@ -40,7 +40,7 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
     /**
      * set all modifiers objects. The last one has priority to the first one.
      *
-     * @param \Jelix\IniFile\IniModifierInterface[]|string[] $modifiers the list of ini file names or IniModifierInterface objects
+     * @param \Jelix\IniFile\IniReaderInterface[]|string[] $modifiers the list of ini file names or ini reader/modifier objects
      */
     public function __construct(array $modifiers)
     {
@@ -84,7 +84,12 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
      */
     public function setValue($name, $value, $section = 0, $key = null)
     {
-        $this->lastModifier->setValue($name, $value, $section, $key);
+        if ($this->lastModifier instanceof IniModifierInterface) {
+            $this->lastModifier->setValue($name, $value, $section, $key);
+        }
+        else {
+            trigger_error("The top ini content is not alterable", E_USER_WARNING);
+        }
     }
 
     /**
@@ -95,7 +100,12 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
      */
     public function setValues($values, $section = 0)
     {
-        $this->lastModifier->setValues($values, $section);
+        if ($this->lastModifier instanceof IniModifierInterface) {
+            $this->lastModifier->setValues($values, $section);
+        }
+        else {
+            trigger_error("The top ini content is not alterable", E_USER_WARNING);
+        }
     }
 
     /**
@@ -165,7 +175,9 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
     public function removeValue($name, $section = 0, $key = null, $removePreviousComment = true)
     {
         foreach($this->modifiers as $mod) {
-            $mod->removeValue($name, $section, $key, $removePreviousComment);
+            if ($mod instanceof IniModifierInterface) {
+                $mod->removeValue($name, $section, $key, $removePreviousComment);
+            }
         }
     }
 
@@ -175,7 +187,9 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
     public function save($chmod = null)
     {
         foreach($this->modifiers as $mod) {
-            $mod->save($chmod);
+            if ($mod instanceof IniModifierInterface) {
+                $mod->save($chmod);
+            }
         }
     }
 
@@ -187,7 +201,7 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
     public function isModified()
     {
         foreach($this->modifiers as $mod) {
-            if ($mod->isModified()) {
+            if ($mod instanceof IniModifierInterface && $mod->isModified()) {
                 return true;
             }
         }

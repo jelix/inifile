@@ -1,5 +1,12 @@
 Changelog
 
+2.4.0
+=====
+
+- new IniReader object, to read only files, to have "read only modifiers" in IniModifierArray
+
+
+
 2.3.0
 =====
 

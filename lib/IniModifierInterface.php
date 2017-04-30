@@ -2,7 +2,7 @@
 
 /**
  * @author     Laurent Jouanneau
- * @copyright  2016 Laurent Jouanneau
+ * @copyright  2016-2017 Laurent Jouanneau
  *
  * @link       http://jelix.org
  * @licence    http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public Licence, see LICENCE file
@@ -13,7 +13,7 @@ namespace Jelix\IniFile;
 /**
  * Interface for classes that allow to modify an ini file
  */
-interface IniModifierInterface
+interface IniModifierInterface extends IniReaderInterface
 {
 
     /**
@@ -46,27 +46,6 @@ interface IniModifierInterface
      * @since 1.2
      */
     public function removeValue($name, $section = 0, $key = null, $removePreviousComment = true);
-
-    /**
-     * return the value of an option in the ini file. If the option doesn't exist,
-     * it returns null.
-     *
-     * @param string $name    the name of the option to retrieve
-     * @param string $section the section where the option is. 0 is the global section
-     * @param int    $key     for option which is an item of array, the key in the array
-     *
-     * @return mixed the value
-     */
-    public function getValue($name, $section = 0, $key = null);
-
-    /**
-     * return all values of a section in the ini file.
-     *
-     * @param string $section the section from wich we want values. 0 is the global section
-     *
-     * @return array the list of values, $key=>$value
-     */
-    public function getValues($section = 0);
 
     /**
      * save the ini file.

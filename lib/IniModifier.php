@@ -16,140 +16,12 @@ namespace Jelix\IniFile;
  * inside values. it doesn't support quotes inside values, because parse_ini_file
  * is totally bugged, depending cases.
  */
-class IniModifier implements IniModifierInterface
+class IniModifier extends IniReader implements IniModifierInterface
 {
-    /**
-     * @const integer token type for whitespaces
-     */
-    const TK_WS = 0;
-    /**
-     * @const integer token type for a comment
-     */
-    const TK_COMMENT = 1;
-    /**
-     * @const integer token type for a section header
-     */
-    const TK_SECTION = 2;
-    /**
-     * @const integer token type for a simple value
-     */
-    const TK_VALUE = 3;
-    /**
-     * @const integer token type for a value of an array item
-     */
-    const TK_ARR_VALUE = 4;
-
-    /**
-     * each item of this array contains data for a section. the key of the item
-     * is the section name. There is a section with the key "0", and which contains
-     * data for options which are not in a section.
-     * each value of the items is an array of tokens. A token is an array with
-     * some values. first value is the token type (see TK_* constants), and other
-     * values depends of the token type:
-     * - TK_WS: content of whitespaces
-     * - TK_COMMENT: the comment
-     * - TK_SECTION: the section name
-     * - TK_VALUE: the name, and the value
-     * - TK_ARRAY_VALUE: the name, the value, and the key.
-     *
-     * @var array
-     */
-    protected $content = array();
-
-    /**
-     * @var string the filename of the ini file
-     */
-    protected $filename = '';
-
     /**
      * @var bool true if the content has been modified
      */
     protected $modified = false;
-
-    /**
-     * load the given ini file.
-     *
-     * @param string $filename the file to load
-     */
-    public function __construct($filename)
-    {
-        if (!file_exists($filename) || !is_file($filename)) {
-            // because the class is used also by installers, we don't have any
-            // modules in this case, so impossible to use jException
-            throw new \Exception('(23)The file '.$filename.' doesn\'t exist', 23);
-        }
-        $this->filename = $filename;
-        $this->parse(preg_split("/(\r\n|\n|\r)/", file_get_contents($filename)));
-    }
-
-    /**
-     * @return string the file name
-     */
-    public function getFileName()
-    {
-        return $this->filename;
-    }
-
-    /**
-     * parsed the lines of the ini file.
-     */
-    protected function parse($lines)
-    {
-        $this->content = array(0 => array());
-        $currentSection = 0;
-        $multiline = false;
-        $currentValue = null;
-
-        $arrayContents = array();
-
-        foreach ($lines as $num => $line) {
-            if ($multiline) {
-                if (preg_match('/^(.*)"\s*$/', $line, $m)) {
-                    $currentValue[2] .= $m[1];
-                    $multiline = false;
-                    $this->content[$currentSection][] = $currentValue;
-                } else {
-                    $currentValue[2] .= $line."\n";
-                }
-            } elseif (preg_match('/^\s*([\\w0-9_.\\-]+)(\\[[^\\[\\]]*\\])?\s*=\s*(")?([^"]*)(")?(\s*)/ui', $line, $m)) {
-                list($all, $name, $foundkey, $firstquote, $value, $secondquote, $lastspace) = $m;
-
-                if ($foundkey != '') {
-                    $key = substr($foundkey, 1, -1);
-                    if ($key == '') {
-                        if (isset($arrayContents[$currentSection][$name])) {
-                            $key = count($arrayContents[$currentSection][$name]);
-                        } else {
-                            $key = 0;
-                        }
-                    }
-                    $currentValue = array(self::TK_ARR_VALUE, $name, $value, $key);
-                    $arrayContents[$currentSection][$name][$key] = $value;
-                } else {
-                    $currentValue = array(self::TK_VALUE, $name, $value);
-                }
-
-                if ($firstquote == '"' && $secondquote == '') {
-                    $multiline = true;
-                    $currentValue[2] .= "\n";
-                } else {
-                    if ($firstquote == '' && $secondquote == '') {
-                        $currentValue[2] = trim($value);
-                    }
-                    $this->content[$currentSection][] = $currentValue;
-                }
-            } elseif (preg_match('/^(\\s*;.*)$/', $line, $m)) {
-                $this->content[$currentSection][] = array(self::TK_COMMENT, $m[1]);
-            } elseif (preg_match('/^(\\s*\\[([\\w0-9_.\\-@:]+)\\]\\s*)/ui', $line, $m)) {
-                $currentSection = $m[2];
-                $this->content[$currentSection] = array(
-                    array(self::TK_SECTION, $m[1]),
-                );
-            } else {
-                $this->content[$currentSection][] = array(self::TK_WS, $line);
-            }
-        }
-    }
 
     /**
      * modify an option in the ini file. If the option doesn't exist,
@@ -312,7 +184,6 @@ class IniModifier implements IniModifierInterface
      */
     public function removeValue($name, $section = 0, $key = null, $removePreviousComment = true)
     {
-        $foundValue = false;
 
         if ($section === 0 && $name == '') {
             return;
@@ -418,109 +289,14 @@ class IniModifier implements IniModifierInterface
                     if ($item[0] == self::TK_ARR_VALUE) {
                         // the previous value was an array value, so we erase other array values
                         $deleteMode = true;
-                        $foundValue = true;
                         continue;
                     }
                 }
-                $foundValue = true;
                 break;
             }
         }
 
         $this->modified = true;
-    }
-
-    /**
-     * return the value of an option in the ini file. If the option doesn't exist,
-     * it returns null.
-     *
-     * @param string $name    the name of the option to retrieve
-     * @param string $section the section where the option is. 0 is the global section
-     * @param int    $key     for option which is an item of array, the key in the array
-     *
-     * @return mixed the value
-     */
-    public function getValue($name, $section = 0, $key = null)
-    {
-        if (!isset($this->content[$section])) {
-            return null;
-        }
-        $arrayValue = array();
-        $isArray = false;
-        foreach ($this->content[$section] as $k => $item) {
-            if (($item[0] != self::TK_VALUE && $item[0] != self::TK_ARR_VALUE)
-                || $item[1] != $name) {
-                continue;
-            }
-            if ($item[0] == self::TK_ARR_VALUE) {
-                if ($key !== null) {
-                    if ($item[3] != $key) {
-                        continue;
-                    }
-                } else {
-                    $isArray = true;
-                    $arrayValue[] = $item[2];
-                    continue;
-                }
-            }
-
-            if (preg_match('/^-?[0-9]$/', $item[2])) {
-                return intval($item[2]);
-            } elseif (preg_match('/^-?[0-9\.]$/', $item[2])) {
-                return floatval($item[2]);
-            } elseif (strtolower($item[2]) === 'true' || strtolower($item[2]) === 'on') {
-                return true;
-            } elseif (strtolower($item[2]) === 'false' || strtolower($item[2]) === 'off') {
-                return false;
-            }
-
-            return $item[2];
-        }
-        if ($isArray) {
-            return $arrayValue;
-        }
-
-        return null;
-    }
-
-    /**
-     * return all values of a section in the ini file.
-     *
-     * @param string $section the section from which we want values. 0 is the global section
-     *
-     * @return array the list of values, $key=>$value
-     */
-    public function getValues($section = 0)
-    {
-        if (!isset($this->content[$section])) {
-            return array();
-        }
-        $values = array();
-        foreach ($this->content[$section] as $k => $item) {
-            if ($item[0] != self::TK_VALUE && $item[0] != self::TK_ARR_VALUE) {
-                continue;
-            }
-
-            if (preg_match('/^-?[0-9]$/', $item[2])) {
-                $val = intval($item[2]);
-            } elseif (preg_match('/^-?[0-9\.]$/', $item[2])) {
-                $val = floatval($item[2]);
-            } elseif (strtolower($item[2]) === 'true' || strtolower($item[2]) === 'on') {
-                $val = true;
-            } elseif (strtolower($item[2]) === 'false' || strtolower($item[2]) === 'off') {
-                $val = false;
-            } else {
-                $val = $item[2];
-            }
-
-            if ($item[0] == self::TK_VALUE) {
-                $values[$item[1]] = $val;
-            } else {
-                $values[$item[1]][$item[3]] = $val;
-            }
-        }
-
-        return $values;
     }
 
     /**
@@ -558,30 +334,6 @@ class IniModifier implements IniModifierInterface
     public function isModified()
     {
         return $this->modified;
-    }
-
-    /**
-     * says if there is a section with the given name.
-     *
-     * @since 1.2
-     */
-    public function isSection($name)
-    {
-        return isset($this->content[$name]);
-    }
-
-    /**
-     * return the list of section names.
-     *
-     * @return array
-     *
-     * @since 1.2
-     */
-    public function getSectionList()
-    {
-        $list = array_keys($this->content);
-        array_shift($list); // remove the global section
-        return $list;
     }
 
     protected function generateIni()
@@ -649,14 +401,14 @@ class IniModifier implements IniModifierInterface
      * named with the value of prefix. If the section prefix is not given, the existing
      * sections and given section with the same name will be merged.
      *
-     * @param \Jelix\IniFile\IniModifier $ini           an ini file modifier to merge with the current
+     * @param \Jelix\IniFile\IniReaderInterface $ini           an ini file modifier to merge with the current
      * @param string                    $sectionPrefix the prefix to add to the section prefix
      * @param string                    $separator     the separator to add between the prefix and the old name
      *                                                 of the section
      *
      * @since 1.2
      */
-    public function import(IniModifier $ini, $sectionPrefix = '', $separator = '_')
+    public function import(IniReaderInterface $ini, $sectionPrefix = '', $separator = '_')
     {
         foreach ($ini->content as $section => $values) {
             if ($sectionPrefix) {
@@ -719,11 +471,11 @@ class IniModifier implements IniModifierInterface
         foreach ($values as $k => $item) {
             switch ($item[0]) {
                 case self::TK_SECTION:
-                  break;
+                    break;
                 case self::TK_WS:
-                  if ($item[1] == '--') {
-                      break;
-                  }
+                    if ($item[1] == '--') {
+                        break;
+                    }
                 case self::TK_COMMENT:
                   $previousItems [] = $item;
                   break;
@@ -765,7 +517,6 @@ class IniModifier implements IniModifierInterface
                         break;
                     }
                     if (!$found) {
-                        $atTheEnd = false;
                         $previousItems[] = $item;
                         if ($lastNonValues > 0) {
                             $previousItems = array_splice($this->content[$sectionTarget], $lastNonValues, $j, $previousItems);

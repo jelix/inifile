@@ -18,7 +18,7 @@ namespace Jelix\IniFile;
 class MultiIniModifier implements IniModifierInterface
 {
     /**
-     * @var \Jelix\IniFile\IniModifier
+     * @var \Jelix\IniFile\IniReaderInterface
      */
     protected $master;
 
@@ -30,8 +30,8 @@ class MultiIniModifier implements IniModifierInterface
     /**
      * load the two ini files.
      *
-     * @param \Jelix\IniFile\IniModifier|string $master    the master ini file (object or filename)
-     * @param \Jelix\IniFile\IniModifier|string $overrider the ini file overriding the master ini file (object or filename)
+     * @param \Jelix\IniFile\IniReaderInterface|string $master    the master ini file (object or filename)
+     * @param \Jelix\IniFile\IniModifierInterface|string $overrider the ini file overriding the master ini file (object or filename)
      */
     public function __construct($master, $overrider)
     {
@@ -72,6 +72,9 @@ class MultiIniModifier implements IniModifierInterface
      */
     public function setValueOnMaster($name, $value, $section = 0, $key = null)
     {
+        if (! $this->master instanceof IniModifierInterface) {
+            throw new IniException("Cannot set value on master which is only an ini reader");
+        }
         $this->master->setValue($name, $value, $section, $key);
     }
 
@@ -94,6 +97,9 @@ class MultiIniModifier implements IniModifierInterface
      */
     public function setValuesOnMaster($values, $section = 0)
     {
+        if (! $this->master instanceof IniModifierInterface) {
+            throw new IniException("Cannot set value on master which is only an ini reader");
+        }
         $this->master->setValues($values, $section);
     }
 
@@ -169,7 +175,9 @@ class MultiIniModifier implements IniModifierInterface
      */
     public function removeValue($name, $section = 0, $key = null, $removePreviousComment = true)
     {
-        $this->master->removeValue($name, $section, $key, $removePreviousComment);
+        if ($this->master instanceof IniModifierInterface) {
+            $this->master->removeValue($name, $section, $key, $removePreviousComment);
+        }
         $this->overrider->removeValue($name, $section, $key, $removePreviousComment);
     }
 
@@ -184,6 +192,9 @@ class MultiIniModifier implements IniModifierInterface
      */
     public function removeValueOnMaster($name, $section = 0, $key = null, $removePreviousComment = true)
     {
+        if (! $this->master instanceof IniModifierInterface) {
+            throw new IniException("Cannot remove value on master which is only an ini reader");
+        }
         $this->master->removeValue($name, $section, $key, $removePreviousComment);
     }
 
@@ -192,7 +203,9 @@ class MultiIniModifier implements IniModifierInterface
      */
     public function save($chmod = null)
     {
-        $this->master->save($chmod);
+        if ($this->master instanceof IniModifierInterface) {
+            $this->master->save($chmod);
+        }
         $this->overrider->save($chmod);
     }
 
@@ -205,11 +218,14 @@ class MultiIniModifier implements IniModifierInterface
      */
     public function isModified()
     {
-        return $this->master->isModified() || $this->overrider->isModified();
+        if ($this->master instanceof IniModifierInterface) {
+            return $this->master->isModified() || $this->overrider->isModified();
+        }
+        return $this->overrider->isModified();
     }
 
     /**
-     * @return \Jelix\IniFile\IniModifier the first ini file
+     * @return \Jelix\IniFile\IniReaderInterface the first ini file
      *
      * @since 1.2
      */
@@ -219,7 +235,7 @@ class MultiIniModifier implements IniModifierInterface
     }
 
     /**
-     * @return \Jelix\IniFile\IniModifier the second ini file
+     * @return \Jelix\IniFile\IniModifierInterface the second ini file
      *
      * @since 1.2
      */
