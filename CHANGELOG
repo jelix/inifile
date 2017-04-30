@@ -4,7 +4,7 @@ Changelog
 =====
 
 - new IniReader object, to read only files, to have "read only modifiers" in IniModifierArray
-
+- Exceptions are now Exceptions from the library, IniInvalidArgumentException and IniException
 
 
 2.3.0

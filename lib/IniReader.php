@@ -72,7 +72,7 @@ class IniReader implements IniReaderInterface
     public function __construct($filename)
     {
         if (!file_exists($filename) || !is_file($filename)) {
-            throw new \InvalidArgumentException("The file $filename does not exists");
+            throw new IniInvalidArgumentException("The file $filename does not exists");
 
         }
         $this->filename = $filename;

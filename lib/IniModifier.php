@@ -35,12 +35,12 @@ class IniModifier extends IniReader implements IniModifierInterface
     public function setValue($name, $value, $section = 0, $key = null)
     {
         if (!preg_match('/^[^\\[\\]]*$/', $name)) {
-            throw new \Exception("Invalid value name $name");
+            throw new IniInvalidArgumentException("Invalid value name $name");
         }
 
         if (is_array($value)) {
             if ($key !== null) {
-                throw new \Exception("You cannot indicate a key for an array value");
+                throw new IniInvalidArgumentException("You cannot indicate a key for an array value");
             }
             $this->_setArrayValue($name, $value, $section);
         }
@@ -51,7 +51,7 @@ class IniModifier extends IniReader implements IniModifierInterface
 
     protected function _setValue($name, $value, $section = 0, $key = null) {
         if (is_string($key) && !preg_match('/^[^\\[\\]]*$/', $key)) {
-            throw new \Exception("Invalid key $key for the value $name");
+            throw new IniInvalidArgumentException("Invalid key $key for the value $name");
         }
         $foundValue = false;
         $lastKey = -1; // last key in an array value
@@ -306,7 +306,7 @@ class IniModifier extends IniReader implements IniModifierInterface
     {
         if ($this->modified) {
             if (false === @file_put_contents($this->filename, $this->generateIni())) {
-                throw new \Exception('Impossible to write into '.$this->filename);
+                throw new IniException('Impossible to write into '.$this->filename);
             } elseif ($chmod) {
                 chmod($this->filename, $chmod);
             }

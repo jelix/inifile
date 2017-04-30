@@ -213,7 +213,7 @@ class Util
                 chmod($f, $chmod);
             }
         } else {
-            throw new \Exception('Error while writing ini file '.$filename, 24);
+            throw new IniException('Error while writing ini file '.$filename, 24);
         }
     }
 

@@ -56,10 +56,10 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
             return new IniModifier($modifier);
         }
         else if (!is_object($modifier)) {
-            throw new \InvalidArgumentException($label." is not a string or a \\Jelix\\IniFile\\IniModifierInterface object");
+            throw new IniInvalidArgumentException($label." is not a string or a \\Jelix\\IniFile\\IniModifierInterface object");
         }
         else if (! $modifier instanceof \Jelix\IniFile\IniModifierInterface) {
-            throw new \InvalidArgumentException($label." is not a \\Jelix\\IniFile\\IniModifierInterface object");
+            throw new IniInvalidArgumentException($label." is not a \\Jelix\\IniFile\\IniModifierInterface object");
         }
         return $modifier;
     }
