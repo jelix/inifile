@@ -58,7 +58,8 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
         else if (!is_object($modifier)) {
             throw new IniInvalidArgumentException($label." is not a string or a \\Jelix\\IniFile\\IniModifierInterface object");
         }
-        else if (! $modifier instanceof \Jelix\IniFile\IniModifierInterface) {
+        else if (! $modifier instanceof \Jelix\IniFile\IniModifierInterface &&
+                 ! $modifier instanceof \Jelix\IniFile\IniReaderInterface) {
             throw new IniInvalidArgumentException($label." is not a \\Jelix\\IniFile\\IniModifierInterface object");
         }
         return $modifier;
