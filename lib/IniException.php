@@ -11,9 +11,8 @@
 namespace Jelix\IniFile;
 
 /**
- * Exception for the library
+ * Exception for the library.
  */
 class IniException extends \Exception
 {
-
 }

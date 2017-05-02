@@ -73,13 +73,13 @@ class IniReader implements IniReaderInterface
     {
         if (!file_exists($filename) || !is_file($filename)) {
             throw new IniInvalidArgumentException("The file $filename does not exists");
-
         }
         $this->filename = $filename;
         $this->parse(preg_split("/(\r\n|\n|\r)/", file_get_contents($filename)));
     }
 
-    public function isEmpty() {
+    public function isEmpty()
+    {
         return (count($this->content) == 0);
     }
 
@@ -160,7 +160,7 @@ class IniReader implements IniReaderInterface
      * @param string $section the section where the option is. 0 is the global section
      * @param int    $key     for option which is an item of array, the key in the array
      *
-     * @return mixed the value
+     * @return mixed|null the value
      */
     public function getValue($name, $section = 0, $key = null)
     {

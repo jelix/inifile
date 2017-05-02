@@ -44,28 +44,29 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
      */
     public function __construct(array $modifiers)
     {
-        foreach($modifiers as $k=>$modifier) {
-            $modifiers[$k] = $this->checkValue("A value from the array", $modifier);
+        foreach ($modifiers as $k => $modifier) {
+            $modifiers[$k] = $this->checkValue('A value from the array', $modifier);
         }
         $this->modifiers = $modifiers;
         $this->setReversedArray();
     }
 
-    protected function checkValue($label, $modifier) {
+    protected function checkValue($label, $modifier)
+    {
         if (is_string($modifier)) {
             return new IniModifier($modifier);
+        } elseif (!is_object($modifier)) {
+            throw new IniInvalidArgumentException($label.' is not a string or a \\Jelix\\IniFile\\IniModifierInterface object');
+        } elseif (!$modifier instanceof \Jelix\IniFile\IniModifierInterface &&
+                 !$modifier instanceof \Jelix\IniFile\IniReaderInterface) {
+            throw new IniInvalidArgumentException($label.' is not a \\Jelix\\IniFile\\IniModifierInterface object');
         }
-        else if (!is_object($modifier)) {
-            throw new IniInvalidArgumentException($label." is not a string or a \\Jelix\\IniFile\\IniModifierInterface object");
-        }
-        else if (! $modifier instanceof \Jelix\IniFile\IniModifierInterface &&
-                 ! $modifier instanceof \Jelix\IniFile\IniReaderInterface) {
-            throw new IniInvalidArgumentException($label." is not a \\Jelix\\IniFile\\IniModifierInterface object");
-        }
+
         return $modifier;
     }
 
-    protected function setReversedArray() {
+    protected function setReversedArray()
+    {
         $this->reversedModifiers = array_reverse($this->modifiers);
         reset($this->reversedModifiers);
         $this->lastModifierKey = key($this->reversedModifiers);
@@ -78,34 +79,32 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
      * modify an option in the latest ini file. If the option doesn't exist,
      * it is created.
      *
-     * @param string $name     the name of the option to modify
-     * @param string $value    the new value
-     * @param string $section  the section where to set the item. 0 is the global section
-     * @param string $key      for option which is an item of array, the key in the array
+     * @param string $name    the name of the option to modify
+     * @param string $value   the new value
+     * @param string $section the section where to set the item. 0 is the global section
+     * @param string $key     for option which is an item of array, the key in the array
      */
     public function setValue($name, $value, $section = 0, $key = null)
     {
         if ($this->lastModifier instanceof IniModifierInterface) {
             $this->lastModifier->setValue($name, $value, $section, $key);
-        }
-        else {
-            trigger_error("The top ini content is not alterable", E_USER_WARNING);
+        } else {
+            trigger_error('The top ini content is not alterable', E_USER_WARNING);
         }
     }
 
     /**
      * modify several options in the latest ini file.
      *
-     * @param array  $value    associated array with key=>value
-     * @param string $section  the section where to set the item. 0 is the global section
+     * @param array  $value   associated array with key=>value
+     * @param string $section the section where to set the item. 0 is the global section
      */
     public function setValues($values, $section = 0)
     {
         if ($this->lastModifier instanceof IniModifierInterface) {
             $this->lastModifier->setValues($values, $section);
-        }
-        else {
-            trigger_error("The top ini content is not alterable", E_USER_WARNING);
+        } else {
+            trigger_error('The top ini content is not alterable', E_USER_WARNING);
         }
     }
 
@@ -113,20 +112,21 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
      * return the value of an option from the ini files. If the option doesn't exist,
      * it returns null.
      *
-     * @param string $name       the name of the option to retrieve
-     * @param string $section    the section where the option is. 0 is the global section
-     * @param string $key        for option which is an item of array, the key in the array
+     * @param string $name    the name of the option to retrieve
+     * @param string $section the section where the option is. 0 is the global section
+     * @param string $key     for option which is an item of array, the key in the array
      *
-     * @return mixed the value
+     * @return mixed|null the value
      */
     public function getValue($name, $section = 0, $key = null)
     {
-        foreach($this->reversedModifiers as $mod) {
+        foreach ($this->reversedModifiers as $mod) {
             $val = $mod->getValue($name, $section, $key);
             if ($val !== null) {
                 return $val;
             }
         }
+
         return null;
     }
 
@@ -137,9 +137,10 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
      *
      * @return array the list of values, $key=>$value
      */
-    public function getValues($section=0) {
+    public function getValues($section = 0)
+    {
         $finalValues = array();
-        foreach($this->modifiers as $mod) {
+        foreach ($this->modifiers as $mod) {
             $values = $mod->getValues($section);
             if (!count($values)) {
                 continue;
@@ -148,19 +149,19 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
                 $finalValues = $values;
                 continue;
             }
-            foreach($values as $key => &$value) {
+            foreach ($values as $key => &$value) {
                 if (!isset($finalValues[$key])) {
                     $finalValues[$key] = $value;
                     continue;
                 }
                 if (is_array($value) && is_array($finalValues[$key])) {
                     $finalValues[$key] = array_merge($finalValues[$key], $value);
-                }
-                else {
+                } else {
                     $finalValues[$key] = $value;
                 }
             }
         }
+
         return $finalValues;
     }
 
@@ -175,7 +176,7 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
      */
     public function removeValue($name, $section = 0, $key = null, $removePreviousComment = true)
     {
-        foreach($this->modifiers as $mod) {
+        foreach ($this->modifiers as $mod) {
             if ($mod instanceof IniModifierInterface) {
                 $mod->removeValue($name, $section, $key, $removePreviousComment);
             }
@@ -187,7 +188,7 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
      */
     public function save($chmod = null)
     {
-        foreach($this->modifiers as $mod) {
+        foreach ($this->modifiers as $mod) {
             if ($mod instanceof IniModifierInterface) {
                 $mod->save($chmod);
             }
@@ -201,24 +202,27 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
      */
     public function isModified()
     {
-        foreach($this->modifiers as $mod) {
+        foreach ($this->modifiers as $mod) {
             if ($mod instanceof IniModifierInterface && $mod->isModified()) {
                 return true;
             }
         }
+
         return false;
     }
 
     // ---------------------------------------------- \IteratorAggregate
 
-    public function getIterator() {
+    public function getIterator()
+    {
         return new \ArrayIterator($this->modifiers);
     }
 
     // ---------------------------------------------- \ArrayAccess
 
-    public function offsetSet($offset, $value) {
-        $value = $this->checkValue("A given value", $value);
+    public function offsetSet($offset, $value)
+    {
+        $value = $this->checkValue('A given value', $value);
         if (is_null($offset)) {
             $this->modifiers[] = $value;
         } else {
@@ -227,22 +231,26 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
         $this->setReversedArray();
     }
 
-    public function offsetExists($offset) {
+    public function offsetExists($offset)
+    {
         return isset($this->modifiers[$offset]);
     }
 
-    public function offsetUnset($offset) {
+    public function offsetUnset($offset)
+    {
         unset($this->modifiers[$offset]);
         $this->setReversedArray();
     }
 
-    public function offsetGet($offset) {
+    public function offsetGet($offset)
+    {
         return isset($this->modifiers[$offset]) ? $this->modifiers[$offset] : null;
     }
 
     // ---------------------------------------------- \Countable
 
-    public function count() {
+    public function count()
+    {
         return count($this->modifiers);
     }
 }

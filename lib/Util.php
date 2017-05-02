@@ -40,7 +40,7 @@ class Util
 
     /**
      * Flag for merging. Directive whose name starts with '_' are not
-     * modified during a merge
+     * modified during a merge.
      */
     const NOT_MERGE_PROTECTED_DIRECTIVE = 1;
 
@@ -62,7 +62,7 @@ class Util
      *
      * @param string $filename the path and the name of the file to read
      * @param object $content
-     * @param integer $flags a combination of constants NOT_MERGE_*, NORMAL_MERGE_*
+     * @param int    $flags    a combination of constants NOT_MERGE_*, NORMAL_MERGE_*
      *
      * @return object|false the content of the file or false if error during parsing the file
      *
@@ -87,7 +87,8 @@ class Util
      *
      * @param object $baseContent     the object which receives new properties
      * @param object $contentToImport the object providing new properties
-     * @param integer $flags a combination of constants NOT_MERGE_*, NORMAL_MERGE_*
+     * @param int    $flags           a combination of constants NOT_MERGE_*, NORMAL_MERGE_*
+     *
      * @return object $baseContent
      */
     public static function mergeIniObjectContents($baseContent, $contentToImport, $flags = 0)
@@ -107,20 +108,18 @@ class Util
                 // this is a section or a array value
                 if (!is_array($baseContent->$k)) {
                     $baseContent->$k = $v;
-                }
-                else {
+                } else {
                     if ($flags & self::NORMAL_MERGE_ARRAY_VALUES_WITH_INTEGER_KEYS) {
                         if (self::hasOnlyIntegerKeys($v) && self::hasOnlyIntegerKeys($baseContent->$k)) {
                             $baseContent->$k = array_merge($baseContent->$k, $v);
                             continue;
                         }
                         $newbase = $baseContent->$k;
-                    }
-                    else {
+                    } else {
                         // first, in the case of an array value, clean the $base value, by removing all values with numerical keys
                         // as it does not make sens to merge two simple arrays here.
                         $newbase = array();
-                        foreach($baseContent->$k as $k2=>$v2) {
+                        foreach ($baseContent->$k as $k2 => $v2) {
                             if (is_string($k2)) {
                                 $newbase[$k2] = $v2;
                             }
@@ -136,17 +135,19 @@ class Util
         return $baseContent;
     }
 
-    protected static function hasOnlyIntegerKeys(&$arr) {
-        foreach($arr as $k=>$v) {
+    protected static function hasOnlyIntegerKeys(&$arr)
+    {
+        foreach ($arr as $k => $v) {
             if (!is_integer($k)) {
                 return false;
             }
         }
+
         return true;
     }
 
-    protected static function mergeSectionContent($base, $toImport, $flags = 0) {
-
+    protected static function mergeSectionContent($base, $toImport, $flags = 0)
+    {
         foreach ($toImport as $k => $v) {
             if (!isset($base[$k])) {
                 $base[$k] = $v;
@@ -160,8 +161,7 @@ class Util
             if (is_array($v)) {
                 if ($flags & self::NORMAL_MERGE_ARRAY_VALUES_WITH_INTEGER_KEYS) {
                     $newbase = $base[$k];
-                }
-                else {
+                } else {
                     // first, clean the $base value, by removing all values with numerical keys
                     // as it does not make sens to merge two simple arrays here.
                     $newbase = array();
@@ -177,9 +177,9 @@ class Util
                 $base[$k] = $v;
             }
         }
+
         return $base;
     }
-
 
     /**
      * write some data in an ini file

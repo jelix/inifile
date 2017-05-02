@@ -11,7 +11,7 @@
 namespace Jelix\IniFile;
 
 /**
- * Interface for classes that allow to read an ini file
+ * Interface for classes that allow to read an ini file.
  */
 interface IniReaderInterface
 {
@@ -35,5 +35,4 @@ interface IniReaderInterface
      * @return array the list of values, $key=>$value
      */
     public function getValues($section = 0);
-
 }

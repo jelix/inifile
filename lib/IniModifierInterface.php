@@ -11,11 +11,10 @@
 namespace Jelix\IniFile;
 
 /**
- * Interface for classes that allow to modify an ini file
+ * Interface for classes that allow to modify an ini file.
  */
 interface IniModifierInterface extends IniReaderInterface
 {
-
     /**
      * modify an option in the ini file. If the option doesn't exist,
      * it is created.
@@ -60,5 +59,4 @@ interface IniModifierInterface extends IniReaderInterface
      * @since 1.2
      */
     public function isModified();
-
 }

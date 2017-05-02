@@ -25,20 +25,20 @@ class IniModifier extends IniReader implements IniModifierInterface
 
     /**
      * IniModifier constructor.
-     * @param string $filename the file from which the content should be readed/written
+     *
+     * @param string $filename       the file from which the content should be readed/written
      * @param string $initialContent if the file does not exists, it takes the given content
-     *   as initial content.
+     *                               as initial content.
      */
     public function __construct($filename, $initialContent = '')
     {
         if (!$filename) {
-            throw new IniInvalidArgumentException("Filename should not be empty");
+            throw new IniInvalidArgumentException('Filename should not be empty');
         }
         $this->filename = $filename;
         if (file_exists($filename) && is_file($filename)) {
             $this->parse(preg_split("/(\r\n|\n|\r)/", file_get_contents($filename)));
-        }
-        else if ($initialContent != '') {
+        } elseif ($initialContent != '') {
             $this->parse(preg_split("/(\r\n|\n|\r)/", $initialContent));
         }
     }
@@ -60,16 +60,16 @@ class IniModifier extends IniReader implements IniModifierInterface
 
         if (is_array($value)) {
             if ($key !== null) {
-                throw new IniInvalidArgumentException("You cannot indicate a key for an array value");
+                throw new IniInvalidArgumentException('You cannot indicate a key for an array value');
             }
             $this->_setArrayValue($name, $value, $section);
-        }
-        else {
+        } else {
             $this->_setValue($name, $value, $section, $key);
         }
     }
 
-    protected function _setValue($name, $value, $section = 0, $key = null) {
+    protected function _setValue($name, $value, $section = 0, $key = null)
+    {
         if (is_string($key) && !preg_match('/^[^\\[\\]]*$/', $key)) {
             throw new IniInvalidArgumentException("Invalid key $key for the value $name");
         }
@@ -141,8 +141,8 @@ class IniModifier extends IniReader implements IniModifierInterface
         $this->modified = true;
     }
 
-    protected function _setArrayValue($name, $value, $section = 0) {
-
+    protected function _setArrayValue($name, $value, $section = 0)
+    {
         $foundKeys = array_combine(array_keys($value),
                                    array_fill(0, count($value), false));
         if (isset($this->content[$section])) {
@@ -157,12 +157,10 @@ class IniModifier extends IniReader implements IniModifierInterface
                     if (isset($value[$item[3]])) {
                         $foundKeys[$item[3]] = true;
                         $this->content[$section][$k][2] = $value[$item[3]];
-                    }
-                    else {
+                    } else {
                         $this->content[$section][$k] = array(self::TK_WS, '--');
                     }
-                }
-                else {
+                } else {
                     $this->content[$section][$k] = array(self::TK_WS, '--');
                 }
             }
@@ -170,14 +168,13 @@ class IniModifier extends IniReader implements IniModifierInterface
             $this->content[$section] = array(array(self::TK_SECTION, '['.$section.']'));
         }
 
-        foreach($value as $k => $v) {
+        foreach ($value as $k => $v) {
             if (!$foundKeys[$k]) {
                 $this->content[$section][] = array(self::TK_ARR_VALUE, $name, $v, $k);
             }
         }
         $this->modified = true;
     }
-
 
     /**
      * modify several options in the ini file.
@@ -204,7 +201,6 @@ class IniModifier extends IniReader implements IniModifierInterface
      */
     public function removeValue($name, $section = 0, $key = null, $removePreviousComment = true)
     {
-
         if ($section === 0 && $name == '') {
             return;
         }
@@ -382,8 +378,7 @@ class IniModifier extends IniReader implements IniModifierInterface
                   case self::TK_ARR_VALUE:
                       if (is_numeric($item[3])) {
                           $content .= $item[1].'[]='.$this->getIniValue($item[2])."\n";
-                      }
-                      else {
+                      } else {
                           $content .= $item[1].'['.$item[3].']='.$this->getIniValue($item[2])."\n";
                       }
 
@@ -401,7 +396,7 @@ class IniModifier extends IniReader implements IniModifierInterface
 
     protected function getIniValue($value)
     {
-        if ($value === '' || is_numeric(trim($value)) || (preg_match("/^[\\w-.]*$/u", $value) && strpos("\n", $value) === false)) {
+        if ($value === '' || is_numeric(trim($value)) || (preg_match('/^[\\w-.]*$/u', $value) && strpos("\n", $value) === false)) {
             return $value;
         } elseif ($value === false) {
             $value = '0';
@@ -422,9 +417,9 @@ class IniModifier extends IniReader implements IniModifierInterface
      * sections and given section with the same name will be merged.
      *
      * @param \Jelix\IniFile\IniReaderInterface $ini           an ini file modifier to merge with the current
-     * @param string                    $sectionPrefix the prefix to add to the section prefix
-     * @param string                    $separator     the separator to add between the prefix and the old name
-     *                                                 of the section
+     * @param string                            $sectionPrefix the prefix to add to the section prefix
+     * @param string                            $separator     the separator to add between the prefix and the old name
+     *                                                         of the section
      *
      * @since 1.2
      */
@@ -527,8 +522,7 @@ class IniModifier extends IniReader implements IniModifierInterface
                             // same name, but not the same type
                             if ($item2[0] == self::TK_VALUE) {
                                 $this->content[$sectionTarget][$j] = $item;
-                            }
-                            else {
+                            } else {
                                 $arrayValuesToReplace[$item[1]] = $item[2];
                             }
                             continue;

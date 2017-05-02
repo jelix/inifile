@@ -30,7 +30,7 @@ class MultiIniModifier implements IniModifierInterface
     /**
      * load the two ini files.
      *
-     * @param \Jelix\IniFile\IniReaderInterface|string $master    the master ini file (object or filename)
+     * @param \Jelix\IniFile\IniReaderInterface|string   $master    the master ini file (object or filename)
      * @param \Jelix\IniFile\IniModifierInterface|string $overrider the ini file overriding the master ini file (object or filename)
      */
     public function __construct($master, $overrider)
@@ -51,10 +51,10 @@ class MultiIniModifier implements IniModifierInterface
      * modify an option in the overrider ini file. If the option doesn't exist,
      * it is created.
      *
-     * @param string $name     the name of the option to modify
-     * @param string $value    the new value
-     * @param string $section  the section where to set the item. 0 is the global section
-     * @param string $key      for option which is an item of array, the key in the array
+     * @param string $name    the name of the option to modify
+     * @param string $value   the new value
+     * @param string $section the section where to set the item. 0 is the global section
+     * @param string $key     for option which is an item of array, the key in the array
      */
     public function setValue($name, $value, $section = 0, $key = null)
     {
@@ -65,15 +65,15 @@ class MultiIniModifier implements IniModifierInterface
      * modify an option in the master ini file. If the option doesn't exist,
      * it is created.
      *
-     * @param string $name     the name of the option to modify
-     * @param string $value    the new value
-     * @param string $section  the section where to set the item. 0 is the global section
-     * @param string $key      for option which is an item of array, the key in the array
+     * @param string $name    the name of the option to modify
+     * @param string $value   the new value
+     * @param string $section the section where to set the item. 0 is the global section
+     * @param string $key     for option which is an item of array, the key in the array
      */
     public function setValueOnMaster($name, $value, $section = 0, $key = null)
     {
-        if (! $this->master instanceof IniModifierInterface) {
-            throw new IniException("Cannot set value on master which is only an ini reader");
+        if (!$this->master instanceof IniModifierInterface) {
+            throw new IniException('Cannot set value on master which is only an ini reader');
         }
         $this->master->setValue($name, $value, $section, $key);
     }
@@ -81,8 +81,8 @@ class MultiIniModifier implements IniModifierInterface
     /**
      * modify several options in the overrider ini file.
      *
-     * @param array  $value    associated array with key=>value
-     * @param string $section  the section where to set the item. 0 is the global section
+     * @param array  $value   associated array with key=>value
+     * @param string $section the section where to set the item. 0 is the global section
      */
     public function setValues($values, $section = 0)
     {
@@ -92,13 +92,13 @@ class MultiIniModifier implements IniModifierInterface
     /**
      * modify several options in the master ini file.
      *
-     * @param array  $value    associated array with key=>value
-     * @param string $section  the section where to set the item. 0 is the global section
+     * @param array  $value   associated array with key=>value
+     * @param string $section the section where to set the item. 0 is the global section
      */
     public function setValuesOnMaster($values, $section = 0)
     {
-        if (! $this->master instanceof IniModifierInterface) {
-            throw new IniException("Cannot set value on master which is only an ini reader");
+        if (!$this->master instanceof IniModifierInterface) {
+            throw new IniException('Cannot set value on master which is only an ini reader');
         }
         $this->master->setValues($values, $section);
     }
@@ -107,9 +107,9 @@ class MultiIniModifier implements IniModifierInterface
      * return the value of an option from the ini files. If the option doesn't exist,
      * it returns null.
      *
-     * @param string $name       the name of the option to retrieve
-     * @param string $section    the section where the option is. 0 is the global section
-     * @param string $key        for option which is an item of array, the key in the array
+     * @param string $name    the name of the option to retrieve
+     * @param string $section the section where the option is. 0 is the global section
+     * @param string $key     for option which is an item of array, the key in the array
      *
      * @return mixed the value
      */
@@ -119,6 +119,7 @@ class MultiIniModifier implements IniModifierInterface
         if ($val === null) {
             $val = $this->master->getValue($name, $section, $key);
         }
+
         return $val;
     }
 
@@ -126,9 +127,9 @@ class MultiIniModifier implements IniModifierInterface
      * return the value of an option from the master ini file only.
      * If the option doesn't exist, it returns null.
      *
-     * @param string $name       the name of the option to retrieve
-     * @param string $section    the section where the option is. 0 is the global section
-     * @param string $key        for option which is an item of array, the key in the array
+     * @param string $name    the name of the option to retrieve
+     * @param string $section the section where the option is. 0 is the global section
+     * @param string $key     for option which is an item of array, the key in the array
      *
      * @return mixed the value
      */
@@ -144,23 +145,23 @@ class MultiIniModifier implements IniModifierInterface
      *
      * @return array the list of values, $key=>$value
      */
-    public function getValues($section=0) {
+    public function getValues($section = 0)
+    {
         $masterValues = $this->master->getValues($section);
         $overValues = $this->overrider->getValues($section);
 
-        foreach ($overValues as $key => &$value)
-        {
+        foreach ($overValues as $key => &$value) {
             if (!isset($masterValues[$key])) {
                 $masterValues[$key] = $value;
                 continue;
             }
             if (is_array($value) && is_array($masterValues[$key])) {
                 $masterValues[$key] = array_merge($masterValues[$key], $value);
-            }
-            else {
+            } else {
                 $masterValues[$key] = $value;
             }
         }
+
         return $masterValues;
     }
 
@@ -192,8 +193,8 @@ class MultiIniModifier implements IniModifierInterface
      */
     public function removeValueOnMaster($name, $section = 0, $key = null, $removePreviousComment = true)
     {
-        if (! $this->master instanceof IniModifierInterface) {
-            throw new IniException("Cannot remove value on master which is only an ini reader");
+        if (!$this->master instanceof IniModifierInterface) {
+            throw new IniException('Cannot remove value on master which is only an ini reader');
         }
         $this->master->removeValue($name, $section, $key, $removePreviousComment);
     }
@@ -221,6 +222,7 @@ class MultiIniModifier implements IniModifierInterface
         if ($this->master instanceof IniModifierInterface) {
             return $this->master->isModified() || $this->overrider->isModified();
         }
+
         return $this->overrider->isModified();
     }
 
