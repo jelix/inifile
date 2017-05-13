@@ -3,9 +3,8 @@
 /**
  * @author     Loic Mathaud
  * @contributor Laurent Jouanneau
- *
- * @copyright  2006 Loic Mathaud, 2008-2016 Laurent Jouanneau
- *
+ * @contributor Erika31, Julien Issler
+ * @copyright  2006 Loic Mathaud, 2008-2016 Laurent Jouanneau, 2017 Erika31, 2017 Julien Issler
  * @link        http://www.jelix.org
  * @licence  http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public Licence, see LICENCE file
  */
@@ -210,7 +209,7 @@ class Util
             fwrite($f, $header.$result);
             fclose($f);
             if ($chmod) {
-                chmod($f, $chmod);
+                chmod($filename, $chmod);
             }
         } else {
             throw new IniException('Error while writing ini file '.$filename, 24);
