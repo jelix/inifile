@@ -396,12 +396,15 @@ class IniModifier extends IniReader implements IniModifierInterface
 
     protected function getIniValue($value)
     {
+        if (is_bool($value)) {
+            if ($value === false) {
+                return "off";
+            } else {
+                return "on";
+            }
+        }
         if ($value === '' || is_numeric(trim($value)) || (preg_match('/^[\\w-.]*$/u', $value) && strpos("\n", $value) === false)) {
             return $value;
-        } elseif ($value === false) {
-            $value = '0';
-        } elseif ($value === true) {
-            $value = '1';
         } else {
             $value = '"'.$value.'"';
         }

@@ -527,6 +527,7 @@ foo= z
                 'truc'=>'machin',
                 'bidule'=>1,
                 'truck'=>true,
+                'notruck'=>false,
                 'foo'=>array('aaa', 'bbb', 'machin'=>'ccc')
             ),
             'the_section');
@@ -544,7 +545,8 @@ truc=true
 
 truc=machin
 bidule=1
-truck=1
+truck=on
+notruck=off
 foo[]=aaa
 foo[]=bbb
 foo[machin]=ccc
