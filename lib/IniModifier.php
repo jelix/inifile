@@ -190,7 +190,7 @@ class IniModifier extends IniReader implements IniModifierInterface
     }
 
     /**
-     * remove an option in the ini file. It can remove an entire section if you give
+     * remove an option from the ini file. It can remove an entire section if you give
      * an empty value as $name, and a $section name.
      *
      * @param string $name    the name of the option to remove, or null to remove an entire section
@@ -206,41 +206,7 @@ class IniModifier extends IniReader implements IniModifierInterface
         }
 
         if ($name == '') {
-            if ($section === 0 || !isset($this->content[$section])) {
-                return;
-            }
-
-            if ($removePreviousComment) {
-                // retrieve the previous section
-                $previousSection = -1;
-                foreach ($this->content as $s => $c) {
-                    if ($s === $section) {
-                        break;
-                    } else {
-                        $previousSection = $s;
-                    }
-                }
-
-                if ($previousSection != -1) {
-                    //retrieve the last comment
-                    $s = $this->content[$previousSection];
-                    end($s);
-                    $tok = current($s);
-                    while ($tok !== false) {
-                        if ($tok[0] != self::TK_WS && $tok[0] != self::TK_COMMENT) {
-                            break;
-                        }
-                        if ($tok[0] == self::TK_COMMENT && strpos($tok[1], '<?') === false) {
-                            $this->content[$previousSection][key($s)] = array(self::TK_WS, '--');
-                        }
-                        $tok = prev($s);
-                    }
-                }
-            }
-
-            unset($this->content[$section]);
-            $this->modified = true;
-
+            $this->removeSection($section, $removePreviousComment);
             return;
         }
 
@@ -312,6 +278,51 @@ class IniModifier extends IniReader implements IniModifierInterface
             }
         }
 
+        $this->modified = true;
+    }
+
+    /**
+     * remove a section from the ini file.
+     *
+     * @param string $section the section where to remove the value, or the section to remove
+     *
+     * @since 2.4.3
+     */
+    public function removeSection($section = 0, $removePreviousComment = true)
+    {
+        if ($section === 0 || !isset($this->content[$section])) {
+            return;
+        }
+
+        if ($removePreviousComment) {
+            // retrieve the previous section
+            $previousSection = -1;
+            foreach ($this->content as $s => $c) {
+                if ($s === $section) {
+                    break;
+                } else {
+                    $previousSection = $s;
+                }
+            }
+
+            if ($previousSection != -1) {
+                //retrieve the last comment
+                $s = $this->content[$previousSection];
+                end($s);
+                $tok = current($s);
+                while ($tok !== false) {
+                    if ($tok[0] != self::TK_WS && $tok[0] != self::TK_COMMENT) {
+                        break;
+                    }
+                    if ($tok[0] == self::TK_COMMENT && strpos($tok[1], '<?') === false) {
+                        $this->content[$previousSection][key($s)] = array(self::TK_WS, '--');
+                    }
+                    $tok = prev($s);
+                }
+            }
+        }
+
+        unset($this->content[$section]);
         $this->modified = true;
     }
 

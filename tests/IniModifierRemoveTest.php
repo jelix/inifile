@@ -61,7 +61,7 @@ foo[]=ccc
         $parser->removeValue('assoc',0, 'oth2', false);
         $this->assertNull($parser->getValue('assoc', 0, 'oth2'));
 
-        $parser->removeValue('', 'aSection', null, false);
+        $parser->removeSection('aSection', false);
         $this->assertNull($parser->getValue('truc','aSection'));
         $this->assertEquals($parser->getSectionList(), array('othersection', 'vla'));
 
