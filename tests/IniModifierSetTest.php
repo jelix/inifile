@@ -51,6 +51,7 @@ truc=machin2
         $parser = new testIniFileModifier('foo.ini', $content);
 
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertFalse($parser->isModified());
         return $parser;
     }
 
@@ -80,6 +81,8 @@ truc=machin2
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         // set value in a section
         $parser->setValue('truc', 'bidule', 'aSection');
@@ -104,6 +107,8 @@ truc=machin2
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         // set value in an other section
         $parser->setValue('truc', 'bidule2', 'othersection');
@@ -128,6 +133,8 @@ truc=machin2
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         $parser->setValue('name', 'toto', 'othersection');
         $expected = array(
@@ -152,7 +159,64 @@ truc=machin2
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
     }
+
+    function testSetExistingValue()
+    {
+        $parser = $this->prepareParserSetValue();
+        // set Simple value
+        $parser->setValue('foo', 'bar');
+        $expected = array(
+            0 => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_COMMENT, "  ; a comment"),
+                array(IniModifier::TK_WS, "  "),
+                array(IniModifier::TK_VALUE, 'foo', 'bar'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'aSection' => array(
+                array(IniModifier::TK_SECTION, "[aSection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'othersection' => array(
+                array(IniModifier::TK_SECTION, "[othersection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin2'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+            ),
+        );
+        $this->assertEquals($expected, $parser->getContent());
+        $this->assertFalse($parser->isModified());
+
+        // set value in a section
+        $parser->setValue('truc', 'machin', 'aSection');
+        $expected = array(
+            0 => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_COMMENT, "  ; a comment"),
+                array(IniModifier::TK_WS, "  "),
+                array(IniModifier::TK_VALUE, 'foo', 'bar'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'aSection' => array(
+                array(IniModifier::TK_SECTION, "[aSection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'othersection' => array(
+                array(IniModifier::TK_SECTION, "[othersection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin2'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+            ),
+        );
+        $this->assertEquals($expected, $parser->getContent());
+        $this->assertFalse($parser->isModified());
+    }
+
 
     function testSetArrayValue()
     {
@@ -181,6 +245,8 @@ truc=machin2
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         // append an array value at the 0 key
         $parser->setValue('theme', 'blue', 'aSection', 0);
@@ -207,6 +273,8 @@ truc=machin2
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
     }
 
     function testSetArrayValue2()
@@ -241,6 +309,8 @@ foo[]=machine
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         $parser->setValue('theme', 'blue', 'aSection', '0');
         $expected = array(
@@ -258,6 +328,8 @@ foo[]=machine
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         $parser->setValue('foo', 'button');
         $expected = array(
@@ -275,6 +347,8 @@ foo[]=machine
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
     }
 
 
@@ -305,6 +379,8 @@ foo[]=machine
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         // now set a new value which is an array
         $parser->setValue('name', array('black', 'brown', 'yellow'), 'othersection');
@@ -332,6 +408,8 @@ foo[]=machine
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         // now change it by a smaller array
         $parser->setValue('name', array('red', 'white'), 'othersection');
@@ -359,6 +437,8 @@ foo[]=machine
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
     }
 
     function testModifyArrayValueWithArray()
@@ -409,6 +489,8 @@ truc=machin2
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         // now change it by a smaller array
         $parser->setValue('mylist', array('red'), 'aSection');
@@ -438,6 +520,8 @@ truc=machin2
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
     }
 
@@ -476,6 +560,8 @@ foo[]=vla
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         $parser->setValue('foo', 'modif', 0, 'key1');
         $expected = array(
@@ -490,6 +576,8 @@ foo[]=vla
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         $parser->setValue('foo', 'modif2', 0, 'champ');
         $expected = array(
@@ -504,6 +592,8 @@ foo[]=vla
             ),
         );
         $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
     }
 
 
@@ -552,6 +642,8 @@ foo[]=bbb
 foo[machin]=ccc
 ';
         $this->assertEquals($expected, $ini->generate());
+        $this->assertTrue($ini->isModified());
+        $ini->clearModifierFlag();
     }
 
 
@@ -576,6 +668,8 @@ foo[]=five
 assoc[ov]="other value"
 ';
         $this->assertEquals($expected, $ini->generate());
+        $this->assertTrue($ini->isModified());
+        $ini->clearModifierFlag();
     }
 
 }

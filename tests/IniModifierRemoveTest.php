@@ -48,22 +48,34 @@ foo[]=ccc
         $parser = new testIniFileModifier('foo.ini', $content);
         $parser->removeValue('anumber', 0, null, false);
         $this->assertNull($parser->getValue('anumber'));
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         $parser->removeValue('laurent','aSection', null, false);
         $this->assertNull($parser->getValue('laurent','aSection'));
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         $parser->removeValue('foo','vla', 1, false);
         $this->assertNull($parser->getValue('foo','vla', 1));
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         $parser->removeValue('assoc','othersection', null, false);
         $this->assertNull($parser->getValue('assoc','othersection'));
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         $parser->removeValue('assoc',0, 'oth2', false);
         $this->assertNull($parser->getValue('assoc', 0, 'oth2'));
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         $parser->removeSection('aSection', false);
         $this->assertNull($parser->getValue('truc','aSection'));
         $this->assertEquals($parser->getSectionList(), array('othersection', 'vla'));
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         $result = '
   ; a comment
@@ -89,6 +101,65 @@ foo[]=ccc
         $this->assertEquals($result, $parser->generate());
     }
 
+
+    function testRemoveUnknownOption() {
+
+        $content = '
+  ; a comment
+  
+foo=bar
+;bla bla
+anumber=98
+string= "uuuuu"
+string2= "aaa
+bbb"
+assoc[oth]=buser
+assoc[oth2]=buser2
+afloatnumber=   5.098  
+
+[aSection]
+truc= true
+laurent=toto
+isvalid = on
+
+[othersection]
+truc=machin2
+
+assoc[key1]=car
+assoc[otherkey]=bus
+
+[vla]
+foo[]=aaa
+foo[]=bbb
+foo[]=ccc
+
+
+';
+        $parser = new testIniFileModifier('foo.ini', $content);
+        $parser->removeValue('zzzzz', 0, null, false);
+        $this->assertNull($parser->getValue('zzzzz'));
+        $this->assertFalse($parser->isModified());
+
+        $parser->removeValue('laurentzzz','aSection', null, false);
+        $this->assertNull($parser->getValue('laurentzzz','aSection'));
+        $this->assertFalse($parser->isModified());
+
+        $parser->removeValue('foo','vla', 5, false);
+        $this->assertNull($parser->getValue('foo','vla', 5));
+        $this->assertFalse($parser->isModified());
+
+        $parser->removeValue('assoczzz','othersection', null, false);
+        $this->assertNull($parser->getValue('assoczzz','othersection'));
+        $this->assertFalse($parser->isModified());
+
+        $parser->removeValue('assoc',0, 'oth3', false);
+        $this->assertNull($parser->getValue('assoc', 0, 'oth3'));
+        $this->assertFalse($parser->isModified());
+
+        $parser->removeSection('aSectionzzz', false);
+        $this->assertNull($parser->getValue('truc','aSectionzzz'));
+        $this->assertFalse($parser->isModified());
+    }
 
 
     function testRemoveArray() {
@@ -147,9 +218,13 @@ foo[]=ccc
 
         $parser->removeValue('assoc', 0, null, false);
         $this->assertNull($parser->getValue('assoc'));
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         $parser->removeValue('foo','vla', null, false);
         $this->assertNull($parser->getValue('foo','vla', 1));
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         $expected = array(
             0 => array(
@@ -223,6 +298,8 @@ foo[]=ccc
         $parser->removeValue('foo','vla', 1, true);
         $parser->removeValue('', 'othersection', null, true);
         $parser->removeValue('foo',0, null, true);
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
 
         $result = '
   ; a comment <?php die()

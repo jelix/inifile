@@ -19,6 +19,10 @@ class testIniFileModifier extends IniModifier {
     
     function generate(){ return $this->generateIni(); }
 
+    function clearModifierFlag() {
+        $this->modified = false;
+    }
+
 }
 
 class testMultiIniFileModifier extends MultiIniModifier {

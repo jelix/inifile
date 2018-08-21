@@ -2,7 +2,7 @@
 
 /**
  * @author     Laurent Jouanneau
- * @copyright  2008-2015 Laurent Jouanneau
+ * @copyright  2008-2018 Laurent Jouanneau
  *
  * @link       http://jelix.org
  * @licence    http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public Licence, see LICENCE file
@@ -82,6 +82,7 @@ class IniModifier extends IniReader implements IniModifierInterface
                 if ($deleteMode) {
                     if ($item[0] == self::TK_ARR_VALUE && $item[1] == $name) {
                         $this->content[$section][$k] = array(self::TK_WS, '--');
+                        $this->modified = true;
                     }
                     continue;
                 }
@@ -106,10 +107,16 @@ class IniModifier extends IniReader implements IniModifierInterface
                     if ($key === '') {
                         $key = 0;
                     }
-                    $this->content[$section][$k] = array(self::TK_ARR_VALUE, $name,$value, $key);
+                    if ($item[2] != $value) {
+                        $this->content[$section][$k] = array(self::TK_ARR_VALUE, $name,$value, $key);
+                        $this->modified = true;
+                    }
                 } else {
                     // we store the value
-                    $this->content[$section][$k] = array(self::TK_VALUE, $name, $value);
+                    if ($item[2] != $value) {
+                        $this->content[$section][$k] = array(self::TK_VALUE, $name, $value);
+                        $this->modified = true;
+                    }
                     if ($item[0] == self::TK_ARR_VALUE) {
                         // the previous value was an array value, so we erase other array values
                         $deleteMode = true;
@@ -136,9 +143,8 @@ class IniModifier extends IniReader implements IniModifierInterface
                 }
                 $this->content[$section][] = array(self::TK_ARR_VALUE, $name, $value, $key);
             }
+            $this->modified = true;
         }
-
-        $this->modified = true;
     }
 
     protected function _setArrayValue($name, $value, $section = 0)
@@ -249,6 +255,7 @@ class IniModifier extends IniReader implements IniModifierInterface
                         continue;
                     }
                 }
+                $this->modified = true;
                 if (count($previousComment)) {
                     $kc = array_pop($previousComment);
                     while ($kc !== null && $this->content[$section][$kc][0] == self::TK_WS) {
@@ -277,8 +284,6 @@ class IniModifier extends IniReader implements IniModifierInterface
                 break;
             }
         }
-
-        $this->modified = true;
     }
 
     /**
