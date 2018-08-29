@@ -166,8 +166,11 @@ class MultiIniModifier implements IniModifierInterface
     }
 
     /**
-     * remove an option from the two ini file. It can remove an entire section if you give
-     * an empty value as $name, and a $section name.
+     * remove an option from the two ini file.
+     *
+     * It can remove an entire section if you give an empty value as $name,
+     * and a $section name. (deprecated behavior, see removeSection())
+     *
      *
      * @param string $name                  the name of the option to remove, or null to remove an entire section
      * @param string $section               the section where to remove the value, or the section to remove
@@ -183,8 +186,10 @@ class MultiIniModifier implements IniModifierInterface
     }
 
     /**
-     * remove an option from the master ini file only. It can remove an entire section if you give
-     * an empty value as $name, and a $section name.
+     * remove an option from the master ini file only.
+     *
+     * It can remove an entire section if you give an empty value as $name,
+     * and a $section name. (deprecated behavior, see removeSection())
      *
      * @param string $name                  the name of the option to remove, or null to remove an entire section
      * @param string $section               the section where to remove the value, or the section to remove
@@ -197,6 +202,38 @@ class MultiIniModifier implements IniModifierInterface
             throw new IniException('Cannot remove value on master which is only an ini reader');
         }
         $this->master->removeValue($name, $section, $key, $removePreviousComment);
+    }
+
+
+    /**
+     * remove a section from the two ini file.
+     *
+     * @param int $section
+     * @param bool $removePreviousComment
+     * @since 2.5.0
+     */
+    public function removeSection($section = 0, $removePreviousComment = true)
+    {
+        if ($this->master instanceof IniModifierInterface) {
+            $this->master->removeSection($section, $removePreviousComment);
+        }
+        $this->overrider->removeSection($section, $removePreviousComment);
+    }
+
+    /**
+     * remove a section from the two ini file.
+     *
+     * @param int $section
+     * @param bool $removePreviousComment
+     * @since 2.5.0
+     */
+    public function removeSectionOnMaster($section = 0, $removePreviousComment = true)
+    {
+        if (!$this->master instanceof IniModifierInterface) {
+            throw new IniException('Cannot remove a section on master which is only an ini reader');
+        }
+
+        $this->master->removeSection($section, $removePreviousComment);
     }
 
     /**

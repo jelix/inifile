@@ -166,8 +166,10 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
     }
 
     /**
-     * remove an option from all ini file. It can remove an entire section
-     * if you give an empty value as $name, and a $section name.
+     * remove an option from all ini file.
+     *
+     * It can remove an entire section if you give an empty value as $name, and a $section name.
+     * (deprecated behavior, see removeSection())
      *
      * @param string $name                  the name of the option to remove, or null to remove an entire section
      * @param string $section               the section where to remove the value, or the section to remove
@@ -179,6 +181,21 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
         foreach ($this->modifiers as $mod) {
             if ($mod instanceof IniModifierInterface) {
                 $mod->removeValue($name, $section, $key, $removePreviousComment);
+            }
+        }
+    }
+
+    /**
+     * remove a section from all ini file.
+     * @param int $section
+     * @param bool $removePreviousComment
+     * @since 2.5.0
+     */
+    public function removeSection($section = 0, $removePreviousComment = true)
+    {
+        foreach ($this->modifiers as $mod) {
+            if ($mod instanceof IniModifierInterface) {
+                $mod->removeSection( $section, $removePreviousComment);
             }
         }
     }

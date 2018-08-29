@@ -35,8 +35,10 @@ interface IniModifierInterface extends IniReaderInterface
     public function setValues($values, $section = 0);
 
     /**
-     * remove an option in the ini file. It can remove an entire section if you give
-     * an empty value as $name, and a $section name.
+     * remove an option in the ini file.
+     *
+     * It can remove an entire section if you give an empty value as $name,
+     * and a $section name. (deprecated behavior, see removeSection())
      *
      * @param string $name    the name of the option to remove, or null to remove an entire section
      * @param string $section the section where to remove the value, or the section to remove
@@ -45,6 +47,15 @@ interface IniModifierInterface extends IniReaderInterface
      * @since 1.2
      */
     public function removeValue($name, $section = 0, $key = null, $removePreviousComment = true);
+
+    /**
+     * remove a section from the ini file.
+     *
+     * @param string $section the section where to remove the value, or the section to remove
+     *
+     * @since 2.5.0
+     */
+    public function removeSection($section = 0, $removePreviousComment = true);
 
     /**
      * save the ini file.
