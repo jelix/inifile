@@ -2,7 +2,7 @@
 
 /**
  * @author     Laurent Jouanneau
- * @copyright  2016-2017 Laurent Jouanneau
+ * @copyright  2016-2018 Laurent Jouanneau
  *
  * @link       http://jelix.org
  * @licence    http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public Licence, see LICENCE file
@@ -15,6 +15,17 @@ namespace Jelix\IniFile;
  */
 interface IniReaderInterface
 {
+
+    /**
+     * @return boolean true if there is no content
+     */
+    public function isEmpty();
+
+    /**
+     * @return string the file name
+     */
+    public function getFileName();
+
     /**
      * return the value of an option in the ini file. If the option doesn't exist,
      * it returns null.
@@ -35,4 +46,17 @@ interface IniReaderInterface
      * @return array the list of values, $key=>$value
      */
     public function getValues($section = 0);
+
+    /**
+     * says if there is a section with the given name.
+     */
+    public function isSection($name);
+
+
+    /**
+     * return the list of section names.
+     *
+     * @return array
+     */
+    public function getSectionList();
 }

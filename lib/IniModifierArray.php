@@ -2,7 +2,7 @@
 
 /**
  * @author     Laurent Jouanneau
- * @copyright  2017 Laurent Jouanneau
+ * @copyright  2017-2018 Laurent Jouanneau
  *
  * @link       http://jelix.org
  * @licence    http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public Licence, see LICENCE file
@@ -74,6 +74,22 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
     }
 
     // ---------------------------------------------- IniModifierInterface
+
+
+    public function isEmpty()
+    {
+        foreach ($this->modifiers as $k => $modifier) {
+            if (!$modifier->isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function getFileName()
+    {
+        return $this->lastModifier->getFileName();
+    }
 
     /**
      * modify an option in the latest ini file. If the option doesn't exist,
@@ -226,6 +242,29 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
         }
 
         return false;
+    }
+
+    public function isSection($name)
+    {
+        foreach ($this->modifiers as $mod) {
+            if ($mod->isSection($name)) {
+                return true;
+            }
+        }
+    }
+
+    /**
+     * return the list of section names.
+     *
+     * @return array
+     */
+    public function getSectionList()
+    {
+        $list = [];
+        foreach ($this->modifiers as $mod) {
+            $list = array_merge($list, $mod->getSectionList());
+        }
+        return array_unique($list);
     }
 
     // ---------------------------------------------- \IteratorAggregate

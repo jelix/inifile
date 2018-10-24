@@ -2,7 +2,7 @@
 
 /**
  * @author     Laurent Jouanneau
- * @copyright  2008-2016 Laurent Jouanneau
+ * @copyright  2008-2018 Laurent Jouanneau
  *
  * @link       http://jelix.org
  * @licence    http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public Licence, see LICENCE file
@@ -45,6 +45,15 @@ class MultiIniModifier implements IniModifierInterface
         } else {
             $this->overrider = new IniModifier($overrider);
         }
+    }
+
+    public function isEmpty()
+    {
+        return $this->master->isEmpty() && $this->overrider->isEmpty();
+    }
+
+    public function getFileName() {
+        return $this->overrider->getFileName();
     }
 
     /**
@@ -281,5 +290,24 @@ class MultiIniModifier implements IniModifierInterface
     public function getOverrider()
     {
         return $this->overrider;
+    }
+
+    /**
+     * says if there is a section with the given name.
+     */
+    public function isSection($name)
+    {
+        return $this->overrider->isSection($name) || $this->master->isSection($name);
+    }
+
+    /**
+     * return the list of section names.
+     *
+     * @return array
+     */
+    public function getSectionList()
+    {
+        $list = array_merge($this->master->getSectionList(), $this->overrider->getSectionList());
+        return array_unique($list);
     }
 }
