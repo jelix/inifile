@@ -1,11 +1,19 @@
 Changelog
 
+3.0.0
+======
+
+- IniReaderInterface declare new methods: isEmpty(), getFileName(), isSection(),
+  getSectionList().
+- New IniModifierReadOnly object. This is a decorator to any IniModifierInterface
+  or IniReaderInterface, to expose only IniReaderInterface methods. So an
+  IniModifierInterface object becomes read only.
+
 2.5.0
 =====
 
 - New method IniModifier::removeSection()
 - Fix: modification flag was triggered although there was no changes
-
 
 2.4.2
 =====
