@@ -29,7 +29,7 @@ class IniModifierReadOnly implements IniReaderInterface
      */
     public function __construct(IniReaderInterface $iniReader)
     {
-       $this->originalIni = $iniReader;
+        $this->originalIni = $iniReader;
     }
 
     public function isEmpty()

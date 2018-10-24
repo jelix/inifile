@@ -52,7 +52,8 @@ class MultiIniModifier implements IniModifierInterface
         return $this->master->isEmpty() && $this->overrider->isEmpty();
     }
 
-    public function getFileName() {
+    public function getFileName()
+    {
         return $this->overrider->getFileName();
     }
 

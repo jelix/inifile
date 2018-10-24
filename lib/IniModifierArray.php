@@ -211,7 +211,7 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
     {
         foreach ($this->modifiers as $mod) {
             if ($mod instanceof IniModifierInterface) {
-                $mod->removeSection( $section, $removePreviousComment);
+                $mod->removeSection($section, $removePreviousComment);
             }
         }
     }

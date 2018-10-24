@@ -149,8 +149,10 @@ class IniModifier extends IniReader implements IniModifierInterface
 
     protected function _setArrayValue($name, $value, $section = 0)
     {
-        $foundKeys = array_combine(array_keys($value),
-                                   array_fill(0, count($value), false));
+        $foundKeys = array_combine(
+            array_keys($value),
+            array_fill(0, count($value), false)
+        );
         if (isset($this->content[$section])) {
             foreach ($this->content[$section] as $k => $item) {
                 // if the item is not a value or an array value, or not the same name
@@ -387,6 +389,7 @@ class IniModifier extends IniReader implements IniModifierInterface
                     if ($item[1] == '--') {
                         break;
                     }
+                    // no break
                   case self::TK_COMMENT:
                     $content .= $item[1]."\n";
                     break;
@@ -512,6 +515,7 @@ class IniModifier extends IniReader implements IniModifierInterface
                     if ($item[1] == '--') {
                         break;
                     }
+                    // no break
                 case self::TK_COMMENT:
                   $previousItems [] = $item;
                   break;
