@@ -1,5 +1,12 @@
 Changelog
 
+3.1.0
+=====
+
+- new parameter in Util::readAndMergeObject() and Utils::mergeIniObjectContents()
+  to indicate a list of sections and top level parameters that will not be merged
+  into the initial content
+
 3.0.0
 ======
 

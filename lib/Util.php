@@ -62,12 +62,15 @@ class Util
      * @param string $filename the path and the name of the file to read
      * @param object $content
      * @param int    $flags    a combination of constants NOT_MERGE_*, NORMAL_MERGE_*
+     * @param array  $ignoredSection list of sections or top level parameters that
+     *                               should not be merged
      *
      * @return object|false the content of the file or false if error during parsing the file
      *
      * @since 2.0
      */
-    public static function readAndMergeObject($filename, $content, $flags = 0)
+    public static function readAndMergeObject($filename, $content, $flags = 0,
+                                              $ignoredSection = array())
     {
         if (!file_exists($filename)) {
             return false;
@@ -78,7 +81,7 @@ class Util
             return false;
         }
 
-        return self::mergeIniObjectContents($content, $newContent, $flags);
+        return self::mergeIniObjectContents($content, $newContent, $flags, $ignoredSection);
     }
 
     /**
@@ -87,10 +90,17 @@ class Util
      * @param object $baseContent     the object which receives new properties
      * @param object $contentToImport the object providing new properties
      * @param int    $flags           a combination of constants NOT_MERGE_*, NORMAL_MERGE_*
+     * @param array  $ignoredSection  list of sections or top level parameters that
+     *                                should not be merged
      *
      * @return object $baseContent
      */
-    public static function mergeIniObjectContents($baseContent, $contentToImport, $flags = 0)
+    public static function mergeIniObjectContents(
+        $baseContent,
+        $contentToImport,
+        $flags = 0,
+        $ignoredSection = array()
+    )
     {
         $contentToImport = (array) $contentToImport;
 
@@ -103,6 +113,11 @@ class Util
             if (($flags & self::NOT_MERGE_PROTECTED_DIRECTIVE) && $k[0] == '_') {
                 continue;
             }
+
+            if (in_array($k, $ignoredSection)) {
+                continue;
+            }
+
             if (is_array($v)) {
                 // this is a section or a array value
                 if (!is_array($baseContent->$k)) {

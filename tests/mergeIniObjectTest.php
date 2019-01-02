@@ -73,6 +73,48 @@ vehicule=bus
         ), $result);
     }
 
+    public function testSectionWithIgnoredSection()
+    {
+        $base = (object) parse_ini_string('
+foo=bar
+untouchedfoo=baz
+[something]
+vehicule=car
+food=bread
+[untouched]
+chou=fleur
+        ', true);
+        $new = (object) parse_ini_string('
+untouchedfoo=hello
+earth=notflat
+[something]
+vehicule=bus
+
+[untouched]
+chou=vert
+some=thing
+
+[newsection]
+newparam=param
+        ', true);
+
+        $result = (array) Util::mergeIniObjectContents($base, $new, 0, array('untouchedfoo', 'untouched'));
+        $this->assertEquals(array(
+            "foo"=>"bar",
+            "untouchedfoo"=>"baz",
+            "earth"=>"notflat",
+            "something"=> array(
+                "vehicule"=>"bus",
+                "food" => "bread"),
+            "untouched"=> array(
+                "chou" => "fleur"
+            ),
+            "newsection" => array(
+                "newparam"=>"param"
+            )
+        ), $result);
+    }
+
     public function testArrayValuesOutsideSections()
     {
         $base = (object) parse_ini_string('
