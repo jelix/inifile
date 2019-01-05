@@ -67,7 +67,7 @@ truc=machin
                 array(IniModifier::TK_SECTION, "[aSection]"),
                 array(IniModifier::TK_VALUE, 'truc', 'machin'),
                 array(IniModifier::TK_WS, ""),
-            ),
+            )
         );
 
         $parser = new testIniFileModifier('foo.ini', $content);
@@ -85,9 +85,11 @@ foo=bar
 [aSection]
 truc=machin
 
-[oé:her@sec-tion]
+[qsk:!893840012+4°05£%£$^*%!:,=){}]
 truc=machin2
 
+[some[other]brackets]
+truc=machin3
 ';
         $expected = array(
             0 => array(
@@ -103,10 +105,15 @@ truc=machin2
                 array(IniModifier::TK_VALUE, 'truc', 'machin'),
                 array(IniModifier::TK_WS, ""),
             ),
-            'oé:her@sec-tion' => array(
-                array(IniModifier::TK_SECTION, "[oé:her@sec-tion]"),
+            'qsk:!893840012+4°05£%£$^*%!:,=){}' => array(
+                array(IniModifier::TK_SECTION, "[qsk:!893840012+4°05£%£$^*%!:,=){}]"),
                 array(IniModifier::TK_VALUE, 'truc', 'machin2'),
                 array(IniModifier::TK_WS, ""),
+            ),
+            // parse_ini_file stops at first ], so we does to.
+            'some[other' => array(
+                array(IniModifier::TK_SECTION, "[some[other]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin3'),
                 array(IniModifier::TK_WS, ""),
             ),
         );
@@ -114,6 +121,23 @@ truc=machin2
         $parser = new testIniFileModifier('foo.ini', $content);
         $this->assertEquals($expected, $parser->getContent());
 
+    }
+
+    /**
+     * test when there is a ';' into the name (mimic parse_ini_file)
+     * @expectedException Jelix\IniFile\IniSyntaxException
+     */
+    public function testParseFileBadSectionName()
+    {
+        $content = '
+  ; a comment
+  
+foo=bar
+[qsk;qsd]
+truc=machin2
+
+';
+        $parser = new testIniFileModifier('foo.ini', $content);
     }
 
     public function testParseFileArray()

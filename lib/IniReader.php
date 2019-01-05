@@ -141,7 +141,11 @@ class IniReader implements IniReaderInterface
                 }
             } elseif (preg_match('/^(\\s*;.*)$/', $line, $m)) {
                 $this->content[$currentSection][] = array(self::TK_COMMENT, $m[1]);
-            } elseif (preg_match('/^(\\s*\\[([\\w0-9_.\\-@:]+)\\]\\s*)/ui', $line, $m)) {
+            } elseif (preg_match('/^(\\s*\\[([^\\]]+)\\]\\s*)/ui', $line, $m)) {
+                if (strpos($m[2], ';')) {
+                    // ';' is forbidden in the name as it begins a comment
+                    throw new IniSyntaxException("Invalid syntax for the section name: \"".$m[2].'"');
+                }
                 $currentSection = $m[2];
                 $this->content[$currentSection] = array(
                     array(self::TK_SECTION, $m[1]),
