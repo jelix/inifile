@@ -185,22 +185,11 @@ class IniReader implements IniReaderInterface
                     }
                 } else {
                     $isArray = true;
-                    $arrayValue[] = $item[2];
+                    $arrayValue[] = $this->convertValue($item[2]);
                     continue;
                 }
             }
-
-            if (preg_match('/^-?[0-9]$/', $item[2])) {
-                return intval($item[2]);
-            } elseif (preg_match('/^-?[0-9\.]$/', $item[2])) {
-                return floatval($item[2]);
-            } elseif (strtolower($item[2]) === 'true' || strtolower($item[2]) === 'on') {
-                return true;
-            } elseif (strtolower($item[2]) === 'false' || strtolower($item[2]) === 'off') {
-                return false;
-            }
-
-            return $item[2];
+            return $this->convertValue($item[2]);
         }
         if ($isArray) {
             return $arrayValue;
@@ -227,17 +216,7 @@ class IniReader implements IniReaderInterface
                 continue;
             }
 
-            if (preg_match('/^-?[0-9]$/', $item[2])) {
-                $val = intval($item[2]);
-            } elseif (preg_match('/^-?[0-9\.]$/', $item[2])) {
-                $val = floatval($item[2]);
-            } elseif (strtolower($item[2]) === 'true' || strtolower($item[2]) === 'on') {
-                $val = true;
-            } elseif (strtolower($item[2]) === 'false' || strtolower($item[2]) === 'off') {
-                $val = false;
-            } else {
-                $val = $item[2];
-            }
+            $val = $this->convertValue($item[2]);
 
             if ($item[0] == self::TK_VALUE) {
                 $values[$item[1]] = $val;
@@ -248,6 +227,20 @@ class IniReader implements IniReaderInterface
 
         return $values;
     }
+
+    protected function convertValue($value) {
+        if (preg_match('/^-?[0-9]$/', $value)) {
+            return intval($value);
+        } elseif (preg_match('/^-?[0-9\.]$/', $value)) {
+            return floatval($value);
+        } elseif (strtolower($value) === 'true' || strtolower($value) === 'on' || strtolower($value) === 'yes') {
+            return true;
+        } elseif (strtolower($value) === 'false' || strtolower($value) === 'off' || strtolower($value) === 'no' || strtolower($value) === 'none') {
+            return false;
+        }
+        return $value;
+    }
+
 
     /**
      * says if there is a section with the given name.

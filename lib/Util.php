@@ -252,9 +252,9 @@ class Util
                   || (preg_match("/^[\w-.]*$/", $value) && strpos("\n", $value) === false)) {
             return $key.'='.$value."\n";
         } elseif ($value === false) {
-            return $key."=0\n";
+            return $key."=off\n";
         } elseif ($value === true) {
-            return $key."=1\n";
+            return $key."=on\n";
         } else {
             return $key.'="'.$value."\"\n";
         }

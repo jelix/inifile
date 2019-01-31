@@ -27,9 +27,16 @@ bbb"
 afloatnumber=   5.098  
 
 [aSection]
-truc= true
 laurent=toto
-isvalid = on
+trucon = on
+machintrue = true
+bidule1 = 1
+chouetyes = yes
+trucoff = off
+machinfalse = false
+bidule0 = 0
+chouetno = no
+bizarre=none
 
 [othersection]
 truc=machin2
@@ -50,9 +57,17 @@ bbb');
   multiline
 bbb');
         $this->assertEquals($parser->getValue('afloatnumber'), 5.098 );
-        $this->assertEquals($parser->getValue('truc','aSection'), true );
+        $this->assertEquals($parser->getValue('truc','aSection'), null );
         $this->assertEquals($parser->getValue('laurent','aSection'), 'toto' );
-        $this->assertEquals($parser->getValue('isvalid','aSection'), true );
+        $this->assertEquals($parser->getValue('trucon','aSection'), true );
+        $this->assertEquals($parser->getValue('machintrue','aSection'), true );
+        $this->assertEquals($parser->getValue('bidule1','aSection'), 1 );
+        $this->assertEquals($parser->getValue('chouetyes','aSection'), true );
+        $this->assertEquals($parser->getValue('trucoff','aSection'), false );
+        $this->assertEquals($parser->getValue('machinfalse','aSection'), false );
+        $this->assertEquals($parser->getValue('bidule0','aSection'), 0 );
+        $this->assertEquals($parser->getValue('chouetno','aSection'), false );
+        $this->assertEquals($parser->getValue('bizarre','aSection'), false );
         $this->assertEquals($parser->getValue('foo','vla',2), 'ccc' );
         $this->assertEquals($parser->getValue('foo','vla'), array('aaa', 'bbb', 'ccc'));
     }
@@ -66,7 +81,15 @@ foo=bar
 
 ; section comment
 [aSection]
-truc=true
+trucon = on
+machintrue = true
+bidule1 = 1
+chouetyes = yes
+trucoff = off
+machinfalse = false
+bidule0 = 0
+chouetno = no
+bizarre=none
 
 ; super section
 [the_section]
@@ -75,19 +98,38 @@ bidule=1
 truck=on
 foo[]=aaa
 ; key comment
-foo[]=bbb
+foo[]=true
+foo[]=off
 foo[]=ccc
+
+
 ';
 
         $ini = new testIniFileModifier('foo.ini', $content);
 
         $values = $ini->getValues('the_section');
-        $expected = array('truc'=>'machin', 'bidule'=>1, 'truck'=>true, 'foo'=>array('aaa', 'bbb', 'ccc'));
+        $expected = array('truc'=>'machin', 'bidule'=>1, 'truck'=>true, 'foo'=>array('aaa', true, false, 'ccc'));
         $this->assertEquals($expected, $values);
 
         $values = $ini->getValues(0);
         $expected = array('foo'=>'bar');
         $this->assertEquals($expected, $values);
+
+        $values = $ini->getValues('aSection');
+        $expected = array(
+            'trucon' => true,
+            'machintrue' => true,
+            'bidule1' => 1,
+            'chouetyes' => true,
+            'trucoff' => false,
+            'machinfalse' => false,
+            'bidule0' => 0,
+            'chouetno' => false,
+            'bizarre'=>false,
+        );
+        $this->assertEquals($expected, $values);
+
+
     }
 
     public function testGetValuesAssocArray() {
@@ -107,14 +149,15 @@ bidule=1
 truck=on
 foo[key1]=aaa
 ; key comment
-foo[key2]=bbb
+foo[key2]=true
+foo[key4]=off
 foo[key3]=ccc
 ';
 
         $ini = new testIniFileModifier('foo.ini', $content);
 
         $values = $ini->getValues('the_section');
-        $expected = array('truc'=>'machin', 'bidule'=>1, 'truck'=>true, 'foo'=>array('key1'=>'aaa', 'key2'=>'bbb', 'key3'=>'ccc'));
+        $expected = array('truc'=>'machin', 'bidule'=>1, 'truck'=>true, 'foo'=>array('key1'=>'aaa', 'key2'=>true, 'key4'=>false, 'key3'=>'ccc'));
         $this->assertEquals($expected, $values);
 
         $values = $ini->getValues(0);
