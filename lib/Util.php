@@ -28,9 +28,9 @@ class Util
     {
         if (file_exists($filename)) {
             if ($asObject) {
-                return (object) parse_ini_file($filename, true);
+                return (object) parse_ini_file($filename, true, INI_SCANNER_TYPED);
             } else {
-                return parse_ini_file($filename, true);
+                return parse_ini_file($filename, true, INI_SCANNER_TYPED);
             }
         } else {
             return false;
@@ -76,7 +76,7 @@ class Util
             return false;
         }
 
-        $newContent = @parse_ini_file($filename, true);
+        $newContent = @parse_ini_file($filename, true, INI_SCANNER_TYPED);
         if ($newContent === false) {
             return false;
         }
