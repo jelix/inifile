@@ -2,7 +2,7 @@
 
 /**
  * @author     Laurent Jouanneau
- * @copyright  2008-2018 Laurent Jouanneau
+ * @copyright  2008-2019 Laurent Jouanneau
  *
  * @link       http://jelix.org
  * @licence    http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public Licence, see LICENCE file
@@ -424,7 +424,11 @@ class IniModifier extends IniReader implements IniModifierInterface
                 return "on";
             }
         }
-        if ($value === '' || is_numeric(trim($value)) || (preg_match('/^[\\w-.]*$/u', $value) && strpos("\n", $value) === false)) {
+        if ($value === '' ||
+            is_numeric(trim($value)) ||
+            (is_string($value) && preg_match('/^[\\w\\-\\.]*$/u', $value) &&
+                strpos("\n", $value) === false)
+        ) {
             return $value;
         } else {
             $value = '"'.$value.'"';

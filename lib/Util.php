@@ -4,7 +4,7 @@
  * @author     Loic Mathaud
  * @contributor Laurent Jouanneau
  * @contributor Erika31, Julien Issler
- * @copyright  2006 Loic Mathaud, 2008-2016 Laurent Jouanneau, 2017 Erika31, 2017 Julien Issler
+ * @copyright  2006 Loic Mathaud, 2008-2019 Laurent Jouanneau, 2017 Erika31, 2017 Julien Issler
  * @link        http://www.jelix.org
  * @licence  http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public Licence, see LICENCE file
  */
@@ -249,7 +249,10 @@ class Util
             return $res;
         } elseif ($value == ''
                   || is_numeric($value)
-                  || (preg_match("/^[\w-.]*$/", $value) && strpos("\n", $value) === false)) {
+                  || (is_string($value) &&
+                      preg_match("/^[\w\\-\\.]*$/", $value) &&
+                      strpos("\n", $value) === false)
+        ) {
             return $key.'='.$value."\n";
         } elseif ($value === false) {
             return $key."=off\n";
