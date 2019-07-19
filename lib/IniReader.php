@@ -229,6 +229,10 @@ class IniReader implements IniReaderInterface
     }
 
     protected function convertValue($value) {
+        if (!is_string($value)) {
+            // values that are set after the parsing, may be PHP raw values...
+            return $value;
+        }
         if (preg_match('/^-?[0-9]$/', $value)) {
             return intval($value);
         } elseif (preg_match('/^-?[0-9\.]$/', $value)) {

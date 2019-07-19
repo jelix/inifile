@@ -22,6 +22,8 @@ foo=bar
 
 [aSection]
 truc=machin
+flag=on
+noflag=off
 
 [othersection]
 truc=machin2
@@ -38,6 +40,8 @@ truc=machin2
             'aSection' => array(
                 array(IniModifier::TK_SECTION, "[aSection]"),
                 array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
                 array(IniModifier::TK_WS, ""),
             ),
             'othersection' => array(
@@ -71,6 +75,8 @@ truc=machin2
             'aSection' => array(
                 array(IniModifier::TK_SECTION, "[aSection]"),
                 array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
                 array(IniModifier::TK_WS, ""),
             ),
             'othersection' => array(
@@ -97,6 +103,8 @@ truc=machin2
             'aSection' => array(
                 array(IniModifier::TK_SECTION, "[aSection]"),
                 array(IniModifier::TK_VALUE, 'truc', 'bidule'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
                 array(IniModifier::TK_WS, ""),
             ),
             'othersection' => array(
@@ -123,6 +131,8 @@ truc=machin2
             'aSection' => array(
                 array(IniModifier::TK_SECTION, "[aSection]"),
                 array(IniModifier::TK_VALUE, 'truc', 'bidule'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
                 array(IniModifier::TK_WS, ""),
             ),
             'othersection' => array(
@@ -148,6 +158,8 @@ truc=machin2
             'aSection' => array(
                 array(IniModifier::TK_SECTION, "[aSection]"),
                 array(IniModifier::TK_VALUE, 'truc', 'bidule'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
                 array(IniModifier::TK_WS, ""),
             ),
             'othersection' => array(
@@ -168,6 +180,8 @@ truc=machin2
         $parser = $this->prepareParserSetValue();
         // set Simple value
         $parser->setValue('foo', 'bar');
+        $parser->setValue('flag', true, 'aSection');
+        $parser->setValue('noflag', false, 'aSection');
         $expected = array(
             0 => array(
                 array(IniModifier::TK_WS, ""),
@@ -179,6 +193,8 @@ truc=machin2
             'aSection' => array(
                 array(IniModifier::TK_SECTION, "[aSection]"),
                 array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
                 array(IniModifier::TK_WS, ""),
             ),
             'othersection' => array(
@@ -191,7 +207,7 @@ truc=machin2
         $this->assertEquals($expected, $parser->getContent());
         $this->assertFalse($parser->isModified());
 
-        // set value in a section
+        // set same value in a section
         $parser->setValue('truc', 'machin', 'aSection');
         $expected = array(
             0 => array(
@@ -204,6 +220,8 @@ truc=machin2
             'aSection' => array(
                 array(IniModifier::TK_SECTION, "[aSection]"),
                 array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
                 array(IniModifier::TK_WS, ""),
             ),
             'othersection' => array(
@@ -215,6 +233,93 @@ truc=machin2
         );
         $this->assertEquals($expected, $parser->getContent());
         $this->assertFalse($parser->isModified());
+
+        // set modified value in a section
+        $parser->setValue('truc', 'bidule', 'aSection');
+        $expected = array(
+            0 => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_COMMENT, "  ; a comment"),
+                array(IniModifier::TK_WS, "  "),
+                array(IniModifier::TK_VALUE, 'foo', 'bar'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'aSection' => array(
+                array(IniModifier::TK_SECTION, "[aSection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'bidule'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'othersection' => array(
+                array(IniModifier::TK_SECTION, "[othersection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin2'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+            ),
+        );
+        $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+
+        $parser = $this->prepareParserSetValue();
+        // set modified boolean value
+        $parser->setValue('flag', false, 'aSection');
+        $parser->setValue('noflag', true, 'aSection');
+        $expected = array(
+            0 => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_COMMENT, "  ; a comment"),
+                array(IniModifier::TK_WS, "  "),
+                array(IniModifier::TK_VALUE, 'foo', 'bar'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'aSection' => array(
+                array(IniModifier::TK_SECTION, "[aSection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_VALUE, 'flag', false),
+                array(IniModifier::TK_VALUE, 'noflag', true),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'othersection' => array(
+                array(IniModifier::TK_SECTION, "[othersection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin2'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+            ),
+        );
+        $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+
+        $parser = $this->prepareParserSetValue();
+        // set Simple value
+        $parser->setValue('flag', 'off', 'aSection');
+        $parser->setValue('noflag', 'on', 'aSection');
+        $expected = array(
+            0 => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_COMMENT, "  ; a comment"),
+                array(IniModifier::TK_WS, "  "),
+                array(IniModifier::TK_VALUE, 'foo', 'bar'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'aSection' => array(
+                array(IniModifier::TK_SECTION, "[aSection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_VALUE, 'flag', 'off'),
+                array(IniModifier::TK_VALUE, 'noflag', 'on'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'othersection' => array(
+                array(IniModifier::TK_SECTION, "[othersection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin2'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+            ),
+        );
+        $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $this->assertFalse($parser->getValue('flag', 'aSection'));
+        $this->assertTrue($parser->getValue('noflag', 'aSection'));
     }
 
 
@@ -234,6 +339,8 @@ truc=machin2
             'aSection' => array(
                 array(IniModifier::TK_SECTION, "[aSection]"),
                 array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
                 array(IniModifier::TK_WS, ""),
             ),
             'othersection' => array(
@@ -261,6 +368,8 @@ truc=machin2
             'aSection' => array(
                 array(IniModifier::TK_SECTION, "[aSection]"),
                 array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
                 array(IniModifier::TK_WS, ""),
                 array(IniModifier::TK_ARR_VALUE, 'theme', 'blue', 0),
             ),
@@ -368,6 +477,8 @@ foo[]=machine
             'aSection' => array(
                 array(IniModifier::TK_SECTION, "[aSection]"),
                 array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
                 array(IniModifier::TK_WS, ""),
             ),
             'othersection' => array(
@@ -395,6 +506,8 @@ foo[]=machine
             'aSection' => array(
                 array(IniModifier::TK_SECTION, "[aSection]"),
                 array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
                 array(IniModifier::TK_WS, ""),
             ),
             'othersection' => array(
@@ -424,6 +537,8 @@ foo[]=machine
             'aSection' => array(
                 array(IniModifier::TK_SECTION, "[aSection]"),
                 array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
                 array(IniModifier::TK_WS, ""),
             ),
             'othersection' => array(

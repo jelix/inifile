@@ -107,13 +107,13 @@ class IniModifier extends IniReader implements IniModifierInterface
                     if ($key === '') {
                         $key = 0;
                     }
-                    if ($item[2] != $value) {
-                        $this->content[$section][$k] = array(self::TK_ARR_VALUE, $name,$value, $key);
+                    if (!$this->_compareNewValue($item[2], $value)) {
+                        $this->content[$section][$k] = array(self::TK_ARR_VALUE, $name, $value, $key);
                         $this->modified = true;
                     }
                 } else {
                     // we store the value
-                    if ($item[2] != $value) {
+                    if (!$this->_compareNewValue($item[2], $value)) {
                         $this->content[$section][$k] = array(self::TK_VALUE, $name, $value);
                         $this->modified = true;
                     }
@@ -146,6 +146,13 @@ class IniModifier extends IniReader implements IniModifierInterface
             $this->modified = true;
         }
     }
+
+    protected function _compareNewValue($iniValue, $newValue) {
+        $iniVal = $this->convertValue($iniValue);
+        $newVal = $this->convertValue($newValue);
+        return ($iniVal == $newVal);
+    }
+
 
     protected function _setArrayValue($name, $value, $section = 0)
     {

@@ -1,5 +1,12 @@
 Changelog
 
+3.2.2
+=====
+
+- Fix `IniModifier::setValue()` when existing value and new values are ini booleans
+  or php boolean. In some case the ini content is not modified even if
+  booleans are different.
+
 3.2.1
 =====
 
