@@ -172,7 +172,7 @@ class Util
                 continue;
             }
 
-            if (is_array($v)) {
+            if (is_array($v) && is_array($base[$k])) {
                 if ($flags & self::NORMAL_MERGE_ARRAY_VALUES_WITH_INTEGER_KEYS) {
                     $newbase = $base[$k];
                 } else {

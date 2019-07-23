@@ -142,6 +142,59 @@ arr[]=eee
         ), $result);
     }
 
+
+    public function testArrayValuesAndStringOutsideSections()
+    {
+        $base = (object) parse_ini_string('
+foo=bar
+arr=bbb,ccc
+
+[something]
+vehicule=car
+food=bread
+        ', true);
+        $new = (object) parse_ini_string('
+arr[]=aaa
+arr[]=eee
+        ', true);
+
+        $result = (array) Util::mergeIniObjectContents($base, $new);
+        $this->assertEquals(array(
+            "foo"=>"bar",
+            "arr"=> array('aaa','eee'),
+            "something"=> array(
+                "vehicule"=>"car",
+                "food" => "bread")
+
+        ), $result);
+    }
+
+    public function testStringAndArrayValuesOutsideSections()
+    {
+        $base = (object) parse_ini_string('
+foo=bar
+arr[]=aaa
+arr[]=eee
+
+[something]
+vehicule=car
+food=bread
+        ', true);
+        $new = (object) parse_ini_string('
+arr=bbb,ccc
+        ', true);
+
+        $result = (array) Util::mergeIniObjectContents($base, $new);
+        $this->assertEquals(array(
+            "foo"=>"bar",
+            "arr"=> 'bbb,ccc',
+            "something"=> array(
+                "vehicule"=>"car",
+                "food" => "bread")
+
+        ), $result);
+    }
+
     public function testArrayValuesOutsideSectionsWithFlag()
     {
         $base = (object) parse_ini_string('
@@ -222,6 +275,60 @@ arr[]=eee
             "something"=> array(
                 "vehicule"=>"car",
                 "arr"=> array('eee'),
+                "food" => "bread")
+
+        ), $result);
+    }
+
+    public function testArrayValuesWithStringIntoSections()
+    {
+        $base = (object) parse_ini_string('
+foo=bar
+
+[something]
+vehicule=car
+arr=bbb,ccc
+food=bread
+        ', true);
+        $new = (object) parse_ini_string('
+[something]
+arr[]=aaa
+arr[]=eee
+        ', true);
+
+        $result = (array) Util::mergeIniObjectContents($base, $new);
+        $this->assertEquals(array(
+            "foo"=>"bar",
+            "something"=> array(
+                "vehicule"=>"car",
+                "arr"=> array('aaa','eee'),
+                "food" => "bread")
+
+        ), $result);
+    }
+
+    public function testStringWithArrayValuesIntoSections()
+    {
+        $base = (object) parse_ini_string('
+foo=bar
+
+[something]
+vehicule=car
+arr[]=aaa
+arr[]=eee
+food=bread
+        ', true);
+        $new = (object) parse_ini_string('
+[something]
+arr=bbb,ccc
+        ', true);
+
+        $result = (array) Util::mergeIniObjectContents($base, $new);
+        $this->assertEquals(array(
+            "foo"=>"bar",
+            "something"=> array(
+                "vehicule"=>"car",
+                "arr"=> 'bbb,ccc',
                 "food" => "bread")
 
         ), $result);
