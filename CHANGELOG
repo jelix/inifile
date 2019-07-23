@@ -1,5 +1,10 @@
 Changelog
 
+3.2.3
+=====
+
+- Fix ini merge when base value is a string and new value is an array
+
 3.2.2
 =====
 
