@@ -46,6 +46,13 @@ foo[]=aaa
 foo[]=bbb
 foo[]=ccc
 
+[the_section]
+truck=on
+foo[key1]=aaa
+; key comment
+foo[key2]=true
+foo[key4]=off
+foo[key3]=ccc
 ');
 
         $this->assertEquals($parser->getValue('foo'), 'bar' );
@@ -70,6 +77,7 @@ bbb');
         $this->assertEquals($parser->getValue('bizarre','aSection'), false );
         $this->assertEquals($parser->getValue('foo','vla',2), 'ccc' );
         $this->assertEquals($parser->getValue('foo','vla'), array('aaa', 'bbb', 'ccc'));
+        $this->assertEquals($parser->getValue('foo','the_section'), array('key1'=>'aaa', 'key2'=>true, 'key4'=>false, 'key3'=>'ccc'));
     }
 
 

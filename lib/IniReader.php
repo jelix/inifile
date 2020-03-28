@@ -185,7 +185,7 @@ class IniReader implements IniReaderInterface
                     }
                 } else {
                     $isArray = true;
-                    $arrayValue[] = $this->convertValue($item[2]);
+                    $arrayValue[$item[3]] = $this->convertValue($item[2]);
                     continue;
                 }
             }
