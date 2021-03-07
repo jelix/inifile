@@ -29,7 +29,7 @@ class IniReader implements IniReaderInterface
     /**
      * @const integer parse mode raw
      */
-    const PR_NORMAL = 1;
+    const PR_RAW = 1;
 
     /**
      * @const integer token type for whitespaces
