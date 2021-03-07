@@ -585,7 +585,13 @@ class IniModifier extends IniReader implements IniModifierInterface
             }
         }
         else {
-            $value = '"'.$value.'"';
+            if ($value === '' ||
+                is_numeric(trim($value))
+            ) {
+                return trim($value);
+            } else {
+                $value = '"'.$value.'"';
+            }
         }
 
         return $value;
