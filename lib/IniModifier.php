@@ -30,8 +30,9 @@ class IniModifier extends IniReader implements IniModifierInterface
      * @param string $initialContent if the file does not exists, it takes the given content
      *                               as initial content.
      */
-    public function __construct($filename, $initialContent = '')
+    public function __construct($filename, $initialContent = '', $parsemode = static::PR_NORMAL)
     {
+        $this->parsemode = $parsemode;
         if (!$filename) {
             throw new IniInvalidArgumentException('Filename should not be empty');
         }
@@ -572,13 +573,18 @@ class IniModifier extends IniReader implements IniModifierInterface
                 return "on";
             }
         }
-        if ($value === '' ||
-            is_numeric(trim($value)) ||
-            (is_string($value) && preg_match('/^[\\w\\-\\.]*$/u', $value) &&
-                strpos("\n", $value) === false)
-        ) {
-            return $value;
-        } else {
+        if ($this->parsemode === static::PR_NORMAL) {
+            if ($value === '' ||
+                is_numeric(trim($value)) ||
+                (is_string($value) && preg_match('/^[\\w\\-\\.]*$/u', $value) &&
+                    strpos("\n", $value) === false)
+            ) {
+                return trim($value);
+            } else {
+                $value = '"'.$value.'"';
+            }
+        }
+        else {
             $value = '"'.$value.'"';
         }
 

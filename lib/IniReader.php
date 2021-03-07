@@ -20,7 +20,17 @@ namespace Jelix\IniFile;
  * read ini content, use parse_ini_file, it's better in term of performance.
  */
 class IniReader implements IniReaderInterface
-{
+{  
+    /**
+     * @const integer parse mode normal
+     */
+    const PR_NORMAL = 0;
+
+    /**
+     * @const integer parse mode raw
+     */
+    const PR_NORMAL = 1;
+
     /**
      * @const integer token type for whitespaces
      */
@@ -41,6 +51,12 @@ class IniReader implements IniReaderInterface
      * @const integer token type for a value of an array item
      */
     const TK_ARR_VALUE = 4;
+
+    /**
+     * the parse mode: PR_NORMAL for normal, typed parsing, PR_RAW for raw (only numeric fields are typed)
+     * @var int
+     */
+    protected $parsemode;
 
     /**
      * each item of this array contains data for a section. the key of the item
@@ -69,8 +85,9 @@ class IniReader implements IniReaderInterface
      *
      * @param string $filename the file to load
      */
-    public function __construct($filename)
+    public function __construct($filename, $parsemode = self::PR_NORMAL)
     {
+        $this->parsemode = $parsemode;
         if (!file_exists($filename) || !is_file($filename)) {
             throw new IniInvalidArgumentException("The file $filename does not exists");
         }
@@ -235,12 +252,14 @@ class IniReader implements IniReaderInterface
         }
         if (preg_match('/^-?[0-9]$/', $value)) {
             return intval($value);
-        } elseif (preg_match('/^-?[0-9\.]$/', $value)) {
-            return floatval($value);
-        } elseif (strtolower($value) === 'true' || strtolower($value) === 'on' || strtolower($value) === 'yes') {
-            return true;
-        } elseif (strtolower($value) === 'false' || strtolower($value) === 'off' || strtolower($value) === 'no' || strtolower($value) === 'none') {
-            return false;
+        } elseif ($this->parsemode === self::PR_NORMAL ) {
+            if (preg_match('/^-?[0-9\.]$/', $value)) {
+                return floatval($value);
+            } elseif (strtolower($value) === 'true' || strtolower($value) === 'on' || strtolower($value) === 'yes') {
+                return true;
+            } elseif (strtolower($value) === 'false' || strtolower($value) === 'off' || strtolower($value) === 'no' || strtolower($value) === 'none') {
+                return false;
+            }
         }
         return $value;
     }
