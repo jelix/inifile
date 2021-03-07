@@ -30,7 +30,7 @@ class IniModifier extends IniReader implements IniModifierInterface
      * @param string $initialContent if the file does not exists, it takes the given content
      *                               as initial content.
      */
-    public function __construct($filename, $initialContent = '', $parsemode = static::PR_NORMAL)
+    public function __construct($filename, $initialContent = '', $parsemode = parent::PR_NORMAL)
     {
         $this->parsemode = $parsemode;
         if (!$filename) {
@@ -213,7 +213,7 @@ class IniModifier extends IniReader implements IniModifierInterface
     /**
      * modify several options in the ini file.
      *
-     * @param array  $value   associated array with key=>value
+     * @param array  $values   associated array with key=>value
      * @param string $section the section where to set the item. 0 is the global section
      */
     public function setValues($values, $section = 0)
@@ -573,7 +573,7 @@ class IniModifier extends IniReader implements IniModifierInterface
                 return "on";
             }
         }
-        if ($this->parsemode === static::PR_NORMAL) {
+        if ($this->parsemode === parent::PR_NORMAL) {
             if ($value === '' ||
                 is_numeric(trim($value)) ||
                 (is_string($value) && preg_match('/^[\\w\\-\\.]*$/u', $value) &&

@@ -29,7 +29,7 @@ interface IniModifierInterface extends IniReaderInterface
     /**
      * modify several options in the ini file.
      *
-     * @param array  $value   associated array with key=>value
+     * @param array  $values   associated array with key=>value
      * @param string $section the section where to set the item. 0 is the global section
      */
     public function setValues($values, $section = 0);

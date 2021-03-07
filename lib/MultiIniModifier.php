@@ -91,7 +91,7 @@ class MultiIniModifier implements IniModifierInterface
     /**
      * modify several options in the overrider ini file.
      *
-     * @param array  $value   associated array with key=>value
+     * @param array  $values   associated array with key=>value
      * @param string $section the section where to set the item. 0 is the global section
      */
     public function setValues($values, $section = 0)
@@ -102,7 +102,7 @@ class MultiIniModifier implements IniModifierInterface
     /**
      * modify several options in the master ini file.
      *
-     * @param array  $value   associated array with key=>value
+     * @param array  $values   associated array with key=>value
      * @param string $section the section where to set the item. 0 is the global section
      */
     public function setValuesOnMaster($values, $section = 0)
