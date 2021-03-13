@@ -3,7 +3,7 @@
     "type": "library",
     "description": "classes to read and modify ini files by preserving comments and empty lines",
     "keywords": ["ini", "files"],
-    "homepage": "http://jelix.org",
+    "homepage": "https://github.com/jelix/inifile",
     "license": "LGPL-2.1",
     "authors": [
         {
@@ -12,6 +12,9 @@
         },
         {
             "name": "Loic Mathaud"
+        },
+        {
+            "name": "Riccardo Mazzei"
         }
     ],
     "require": {

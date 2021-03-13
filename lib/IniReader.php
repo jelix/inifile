@@ -20,7 +20,25 @@ namespace Jelix\IniFile;
  * read ini content, use parse_ini_file, it's better in term of performance.
  */
 class IniReader implements IniReaderInterface
-{
+{  
+    /**
+     * @const integer normal parse mode
+     *        all numeric and boolean values are parsed
+     */
+    const PR_NORMAL = 0;
+
+    /**
+     * @const integer numeric parse mode 
+     *        only numeric values are parsed
+     */
+    const PR_NUMERIC = 1;
+
+    /**
+     * @const integer raw parse mode
+     *        all values are left as strings
+     */
+    const PR_RAW = 2;
+
     /**
      * @const integer token type for whitespaces
      */
@@ -41,6 +59,14 @@ class IniReader implements IniReaderInterface
      * @const integer token type for a value of an array item
      */
     const TK_ARR_VALUE = 4;
+
+    /**
+     * the parse mode: PR_NORMAL: normal, typed parsing (numeric types and boolean)
+     *                 PR_NUMERIC: only numeric fields are parsed into corresponding types
+     *                 PR_RAW: any value is left as string when read from ini file
+     * @var int
+     */
+    protected $parsemode;
 
     /**
      * each item of this array contains data for a section. the key of the item
@@ -69,8 +95,9 @@ class IniReader implements IniReaderInterface
      *
      * @param string $filename the file to load
      */
-    public function __construct($filename)
+    public function __construct($filename, $parsemode = self::PR_NORMAL)
     {
+        $this->parsemode = $parsemode;
         if (!file_exists($filename) || !is_file($filename)) {
             throw new IniInvalidArgumentException("The file $filename does not exists");
         }
@@ -229,20 +256,46 @@ class IniReader implements IniReaderInterface
     }
 
     protected function convertValue($value) {
-        if (!is_string($value)) {
-            // values that are set after the parsing, may be PHP raw values...
-            return $value;
+        switch ($this->parsemode) {
+
+            case self::PR_RAW: {
+                return strval($value);
+            }
+
+            case self::PR_NUMERIC: {
+                if (is_numeric($value)) {
+                    // values that are set after the parsing, may be PHP numeric values...
+                    return $value;
+                }
+
+                if (preg_match('/^-?[0-9]+$/', $value)) {
+                    return intval($value);
+                } elseif (preg_match('/^-?[0-9]*\.[0-9]+$/', $value)) {
+                    return floatval($value);
+                }
+                return strval($value);
+            }
+
+            case self::PR_NORMAL:
+            default: {
+
+                if (!is_string($value)) {
+                    // values that are set after the parsing, may be PHP raw values...
+                    return $value;
+                }
+
+                if (preg_match('/^-?[0-9]+$/', $value)) {
+                    return intval($value);
+                } elseif (preg_match('/^-?[0-9]*\.[0-9]+$/', $value)) {
+                    return floatval($value);
+                } elseif (strtolower($value) === 'true' || strtolower($value) === 'on' || strtolower($value) === 'yes') {
+                    return true;
+                } elseif (strtolower($value) === 'false' || strtolower($value) === 'off' || strtolower($value) === 'no' || strtolower($value) === 'none') {
+                    return false;
+                }
+                return $value;
+            }
         }
-        if (preg_match('/^-?[0-9]$/', $value)) {
-            return intval($value);
-        } elseif (preg_match('/^-?[0-9\.]$/', $value)) {
-            return floatval($value);
-        } elseif (strtolower($value) === 'true' || strtolower($value) === 'on' || strtolower($value) === 'yes') {
-            return true;
-        } elseif (strtolower($value) === 'false' || strtolower($value) === 'off' || strtolower($value) === 'no' || strtolower($value) === 'none') {
-            return false;
-        }
-        return $value;
     }
 
 

@@ -14,7 +14,7 @@ composer require "jelix/inifile"
 # Usage
 
 The ```\Jelix\IniFile\IniModifier``` class allows to read an ini file, to modify its
-content, and save it by preserving its comments and empty lines.
+content including comments, and save it by preserving empty lines.
 
 Don't use this class to just read content. Use instead ```\Jelix\IniFile\Util``` or
 ```parse_ini_file()``` for this purpose, it's more efficient and performant.
@@ -32,9 +32,17 @@ $val = $ini->getValue('parameter_name', 'section_name');
 // remove a parameter
 $ini->removeValue('parameter_name', 'section_name');
 
+// setting a comment (in the line preceding the parameter) - the leading ';'
+// can be omitted or included in the comment line, if missing will be added
+$ini->setComments('parameter_name', '; single-line comment text', 'section_name');
+
+// setting a multi-line comment (in the lines preceding the parameter)
+$ini->setComments('parameter_name', [ 'first line', 'second line' ], 'section_name');
+
+// remove all comment lines preceding a parameter
+$ini->removeComments('parameter_name', 'section_name');
 
 // save into file
-
 $ini->save();
 $ini->saveAs('otherfile.ini');
 
@@ -49,6 +57,8 @@ $ini->mergeSection('sectionSource', 'sectionTarget');
 
 ```
 
+It support parsing of parameter values into PHP types (string, numeric, boolean) as well as 
+
 It supports also array values (indexed or associative) like :
 
 ```
@@ -60,7 +70,7 @@ assoc[otherkey]=bus
 
 Then in PHP:
 
-```
+```php
 $ini = new \Jelix\IniFile\IniModifier('myfile.ini');
 
 $val = $ini->getValue('foo'); // array('bar', 'baz');
@@ -72,14 +82,13 @@ $val = $ini->getValue('foo'); // array('bar', 'baz', 'other value');
 $ini->setValue('foo', 'five', 0, 5);
 $val = $ini->getValue('foo'); // array('bar', 'baz', 'other value', 5 => 'five');
 
-
 $ini->setValue('assoc', 'other value', 0, 'ov');
 $val = $ini->getValue('assoc'); // array('key1'=>'car', 'otherkey'=>'bus', 'ov'=>'other value');
 ```
 
 After saving, the ini content is:
 
-```
+```ini
 foo[]=bar
 foo[]=baz
 assoc[key1]=car

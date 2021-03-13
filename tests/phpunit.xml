@@ -3,9 +3,15 @@
   <testsuites>
     <testsuite name="Ini tools">
       <file>IniModifierTest.php</file>
-      <file>IniModifierSetTest.php</file>
-      <file>IniModifierGetTest.php</file>
+      <file>IniModifierNormalSetTest.php</file>
+      <file>IniModifierNumericSetTest.php</file>
+      <file>IniModifierRawSetTest.php</file>
+      <file>IniModifierNormalGetTest.php</file>
+      <file>IniModifierNumericGetTest.php</file>
+      <file>IniModifierRawGetTest.php</file>
       <file>IniModifierRemoveTest.php</file>
+      <file>IniModifierSetCommentsTest.php</file>
+      <file>IniModifierRemoveCommentsTest.php</file>
       <file>IniModifierRenameTest.php</file>
       <file>IniModifierImportTest.php</file>
       <file>MultiIniModifierTest.php</file>

@@ -30,8 +30,9 @@ class IniModifier extends IniReader implements IniModifierInterface
      * @param string $initialContent if the file does not exists, it takes the given content
      *                               as initial content.
      */
-    public function __construct($filename, $initialContent = '')
+    public function __construct($filename, $initialContent = '', $parsemode = self::PR_NORMAL)
     {
+        $this->parsemode = $parsemode;
         if (!$filename) {
             throw new IniInvalidArgumentException('Filename should not be empty');
         }
@@ -132,7 +133,16 @@ class IniModifier extends IniReader implements IniModifierInterface
         }
         if (!$foundValue) {
             if ($key === null) {
-                $this->content[$section][] = array(self::TK_VALUE, $name, $value);
+                if ($this->content[$section]) {
+                    for ($pos = count($this->content[$section]) - 1; $pos >= 0; $pos--) {
+                        if ($this->content[$section][$pos][0] !== self::TK_WS && $this->content[$section][$pos][0] !== self::TK_COMMENT) {
+                            array_splice($this->content[$section], $pos + 1, 0, array(array(self::TK_VALUE, $name, $value)));
+                            break;
+                        }
+                    }
+                } else {
+                    $this->content[$section][] = array(self::TK_VALUE, $name, $value);
+                }
             } else {
                 if ($key === '') {
                     if ($lastKey != -1) {
@@ -141,7 +151,16 @@ class IniModifier extends IniReader implements IniModifierInterface
                         $key = 0;
                     }
                 }
-                $this->content[$section][] = array(self::TK_ARR_VALUE, $name, $value, $key);
+                if ($this->content[$section]) {
+                    for ($pos = count($this->content[$section]) - 1; $pos >= 0; $pos--) {
+                        if ($this->content[$section][$pos][0] !== self::TK_WS && $this->content[$section][$pos][0] !== self::TK_COMMENT) {
+                            array_splice($this->content[$section], $pos + 1, 0, array(array(self::TK_ARR_VALUE, $name, $value, $key)));
+                            break;
+                        }
+                    }
+                } else {
+                    $this->content[$section][] = array(self::TK_ARR_VALUE, $name, $value, $key);
+                }
             }
             $this->modified = true;
         }
@@ -185,7 +204,16 @@ class IniModifier extends IniReader implements IniModifierInterface
 
         foreach ($value as $k => $v) {
             if (!$foundKeys[$k]) {
-                $this->content[$section][] = array(self::TK_ARR_VALUE, $name, $v, $k);
+                if ($this->content[$section]) {
+                    for ($pos = count($this->content[$section]) - 1; $pos >= 0; $pos--) {
+                        if ($this->content[$section][$pos][0] !== self::TK_WS && $this->content[$section][$pos][0] !== self::TK_COMMENT) {
+                            array_splice($this->content[$section], $pos + 1, 0, array(array(self::TK_ARR_VALUE, $name, $v, $k)));
+                            break;
+                        }
+                    }
+                } else {
+                    $this->content[$section][] = array(self::TK_ARR_VALUE, $name, $v, $k);
+                }
             }
         }
         $this->modified = true;
@@ -194,7 +222,7 @@ class IniModifier extends IniReader implements IniModifierInterface
     /**
      * modify several options in the ini file.
      *
-     * @param array  $value   associated array with key=>value
+     * @param array  $values   associated array with key=>value
      * @param string $section the section where to set the item. 0 is the global section
      */
     public function setValues($values, $section = 0)
@@ -293,6 +321,129 @@ class IniModifier extends IniReader implements IniModifierInterface
                     }
                 }
                 break;
+            }
+        }
+    }
+
+    /**
+     * create or replace comment lines preceding an option.
+     *
+     * @param string $name      the name of the option to find
+     * @param mixed  $comments  comment line (if string) or array of lines.
+     * @param string $section   the section where to find the item to add/set the comments to. 0 is the global section
+     * @param int    $key       for option which is an item of array, the key in the array.
+     */
+    public function setComments($name, $comments, $section = 0, $key = null)
+    {
+        $this->_setOrRemoveComments($name, $section, $key, $comments);
+    }
+
+    /**
+     * remove comment lines preceding an option.
+     *
+     * @param string $name      the name of the option to find
+     * @param string $section   the section where to set the item. 0 is the global section
+     * @param int    $key       for option which is an item of array, the key in the array.
+     */
+    public function removeComments($name, $section = 0, $key = null)
+    {
+        $this->_setOrRemoveComments($name, $section, $key, $comments = null);
+    }
+
+    protected function _setOrRemoveComments($name, $section = 0, $key = null, $comments = null)
+    {
+        if (is_string($key) && !preg_match('/^[^\\[\\]]*$/', $key)) {
+            throw new IniInvalidArgumentException("Invalid key $key for the value $name");
+        }
+
+        if ($comments) {
+            if (!is_array($comments)) {
+                $comments = array($comments);
+            }
+
+            foreach ($comments as $i => $comment) {
+                if (substr($comment, 0, 1) !== ';') {
+                    $comments[$i] = ';' . $comments[$i];
+                }
+                $comments[$i] = array(self::TK_COMMENT, $comments[$i]);
+            }
+        }
+
+        if ($name == '') {
+            // retrieve the previous section
+            $previousSection = -1;
+            foreach ($this->content as $s => $c) {
+                if ($s === $section) {
+                    break;
+                } else {
+                    $previousSection = $s;
+                }
+            }
+
+            if ($previousSection != -1) {
+                //retrieve the last comment
+                $s = $this->content[$previousSection];
+                end($s);
+                $tok = current($s);
+                while ($tok !== false) {
+                    if ($tok[0] != self::TK_COMMENT) {
+                        break;
+                    }
+                    if ($tok[0] == self::TK_COMMENT && strpos($tok[1], '<?') === false) {
+                        $this->content[$previousSection][key($s)] = array(self::TK_WS, '--');
+                    }
+                    $tok = prev($s);
+                }
+                if ($comments) {
+                    foreach ($comments as $comment) {
+                        $this->content[$previousSection][] = $comment;
+                    }
+                }
+            }
+            return;
+        }
+
+        if (isset($this->content[$section])) {
+            // boolean to erase array values if the option to remove is an array
+            $previousComment = array();
+            foreach ($this->content[$section] as $k => $item) {
+                if ($item[0] == self::TK_COMMENT) {
+                    $previousComment[] = $k;
+                    continue;
+                }
+
+                if ($item[0] == self::TK_WS) {
+                    continue;
+                }
+
+                // if the item is not a value or an array value, or not the same name
+                if ($item[1] != $name) {
+                    $previousComment = array();
+                    continue;
+                }
+
+                // if it is an array value, and if the key doesn't correspond
+                if ($item[0] == self::TK_ARR_VALUE && $key !== null) {
+                    if ($item[3] != $key) {
+                        $previousComment = array();
+                        continue;
+                    }
+                }
+                $this->modified = true;
+                if (count($previousComment)) {
+                    $kc = array_pop($previousComment);
+
+                    $lastKc = -1;
+                    while ($kc !== null) {
+                        if (strpos($this->content[$section][$kc][1], '<?') === false) {
+                            $this->content[$section][$kc] = array(self::TK_WS, '--');
+                        }
+                        $kc = array_pop($previousComment);
+                    }
+                }
+                if ($comments) {
+                    array_splice($this->content[$section], $k, 0, $comments);
+                }
             }
         }
     }
@@ -431,14 +582,25 @@ class IniModifier extends IniReader implements IniModifierInterface
                 return "on";
             }
         }
-        if ($value === '' ||
-            is_numeric(trim($value)) ||
-            (is_string($value) && preg_match('/^[\\w\\-\\.]*$/u', $value) &&
-                strpos("\n", $value) === false)
-        ) {
-            return $value;
-        } else {
-            $value = '"'.$value.'"';
+        if ($this->parsemode === self::PR_NORMAL) {
+            if ($value === '' ||
+                is_numeric(trim($value)) ||
+                (is_string($value) && preg_match('/^[\\w\\-\\.]*$/u', $value) &&
+                    strpos("\n", $value) === false)
+            ) {
+                return trim($value);
+            } else {
+                $value = '"'.$value.'"';
+            }
+        }
+        else {
+            if ($value === '' ||
+                is_numeric(trim($value))
+            ) {
+                return trim($value);
+            } else {
+                $value = '"'.$value.'"';
+            }
         }
 
         return $value;
