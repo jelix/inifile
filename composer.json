@@ -1,9 +1,9 @@
 {
-    "name": "rik72/inifile",
+    "name": "jelix/inifile",
     "type": "library",
     "description": "classes to read and modify ini files by preserving comments and empty lines",
     "keywords": ["ini", "files"],
-    "homepage": "https://github.com/rik72/inifile",
+    "homepage": "https://github.com/jelix/inifile",
     "license": "LGPL-2.1",
     "authors": [
         {
@@ -14,8 +14,7 @@
             "name": "Loic Mathaud"
         },
         {
-            "name": "Riccardo Mazzei",
-            "email": "riccardo.mazzei@gmail.com"
+            "name": "Riccardo Mazzei"
         }
     ],
     "require": {
