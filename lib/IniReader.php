@@ -22,14 +22,22 @@ namespace Jelix\IniFile;
 class IniReader implements IniReaderInterface
 {  
     /**
-     * @const integer parse mode normal
+     * @const integer normal parse mode
+     *        all numeric and boolean values are parsed
      */
     const PR_NORMAL = 0;
 
     /**
-     * @const integer parse mode raw
+     * @const integer numeric parse mode 
+     *        only numeric values are parsed
      */
-    const PR_RAW = 1;
+    const PR_NUMERIC = 1;
+
+    /**
+     * @const integer raw parse mode
+     *        all values are left as strings
+     */
+    const PR_RAW = 2;
 
     /**
      * @const integer token type for whitespaces
@@ -53,7 +61,9 @@ class IniReader implements IniReaderInterface
     const TK_ARR_VALUE = 4;
 
     /**
-     * the parse mode: PR_NORMAL for normal, typed parsing, PR_RAW for raw (only numeric fields are typed)
+     * the parse mode: PR_NORMAL: normal, typed parsing (numeric types and boolean)
+     *                 PR_NUMERIC: only numeric fields are parsed into corresponding types
+     *                 PR_RAW: any value is left as string when read from ini file
      * @var int
      */
     protected $parsemode;
@@ -246,22 +256,46 @@ class IniReader implements IniReaderInterface
     }
 
     protected function convertValue($value) {
-        if (!is_string($value)) {
-            // values that are set after the parsing, may be PHP raw values...
-            return $value;
-        }
-        if (preg_match('/^-?[0-9]$/', $value)) {
-            return intval($value);
-        } elseif ($this->parsemode === self::PR_NORMAL ) {
-            if (preg_match('/^-?[0-9\.]$/', $value)) {
-                return floatval($value);
-            } elseif (strtolower($value) === 'true' || strtolower($value) === 'on' || strtolower($value) === 'yes') {
-                return true;
-            } elseif (strtolower($value) === 'false' || strtolower($value) === 'off' || strtolower($value) === 'no' || strtolower($value) === 'none') {
-                return false;
+        switch ($this->parsemode) {
+
+            case self::PR_RAW: {
+                return strval($value);
+            }
+
+            case self::PR_NUMERIC: {
+                if (is_numeric($value)) {
+                    // values that are set after the parsing, may be PHP numeric values...
+                    return $value;
+                }
+
+                if (preg_match('/^-?[0-9]+$/', $value)) {
+                    return intval($value);
+                } elseif (preg_match('/^-?[0-9]*\.[0-9]+$/', $value)) {
+                    return floatval($value);
+                }
+                return strval($value);
+            }
+
+            case self::PR_NORMAL:
+            default: {
+
+                if (!is_string($value)) {
+                    // values that are set after the parsing, may be PHP raw values...
+                    return $value;
+                }
+
+                if (preg_match('/^-?[0-9]+$/', $value)) {
+                    return intval($value);
+                } elseif (preg_match('/^-?[0-9]*\.[0-9]+$/', $value)) {
+                    return floatval($value);
+                } elseif (strtolower($value) === 'true' || strtolower($value) === 'on' || strtolower($value) === 'yes') {
+                    return true;
+                } elseif (strtolower($value) === 'false' || strtolower($value) === 'off' || strtolower($value) === 'no' || strtolower($value) === 'none') {
+                    return false;
+                }
+                return $value;
             }
         }
-        return $value;
     }
 
 

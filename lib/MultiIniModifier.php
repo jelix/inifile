@@ -214,6 +214,67 @@ class MultiIniModifier implements IniModifierInterface
         $this->master->removeValue($name, $section, $key, $removePreviousComment);
     }
 
+    /**
+     * create or replace comment lines preceding an option in the overrider ini file.
+     *
+     * @param string $name      the name of the option to find
+     * @param mixed  $comments  comment line content (if string) or array of lines contents. Each line
+     *                          will be prepended with ";" if needed
+     * @param string $section   the section where to set the item. 0 is the global section
+     * @param int    $key       for option which is an item of array, the key in the array.
+     */
+    public function setComments($name, $comments, $section = 0, $key = null)
+    {
+        $this->overrider->setComments($name, $comments, $section, $key);
+    }
+
+    /**
+     * create or replace comment lines preceding an option in the overrider ini file.
+     *
+     * @param string $name      the name of the option to find
+     * @param mixed  $comments  comment line content (if string) or array of lines contents. Each line
+     *                          will be prepended with ";" if needed
+     * @param string $section   the section where to set the item. 0 is the global section
+     * @param int    $key       for option which is an item of array, the key in the array.
+     */
+    public function setCommentsOnMaster($name, $comments, $section = 0, $key = null)
+    {
+        if (!$this->master instanceof IniModifierInterface) {
+            throw new IniException('Cannot set comments on master which is only an ini reader');
+        }
+        $this->master->setComments($name, $comments, $section, $key);
+    }
+
+    /**
+     * remove comment lines preceding an option from the two ini file.
+     *
+     * @param string $name      the name of the option to find
+     * @param string $section   the section where to set the item. 0 is the global section
+     * @param int    $key       for option which is an item of array, the key in the array.
+     */
+    public function removeComments($name, $section = 0, $key = null)
+    {
+        if ($this->master instanceof IniModifierInterface) {
+            $this->master->removeComments($name, $section, $key);
+        }
+        $this->overrider->removeComments($name, $section, $key);
+    }
+
+    /**
+     * remove comment lines preceding an option from master ini file only.
+     *
+     * @param string $name      the name of the option to find
+     * @param string $section   the section where to set the item. 0 is the global section
+     * @param int    $key       for option which is an item of array, the key in the array.
+     */
+    public function removeCommentsOnMaster($name, $section = 0, $key = null)
+    {
+        if ($this->master instanceof IniModifierInterface) {
+            throw new IniException('Cannot remove comments on master which is only an ini reader');
+        }
+        $this->master->removeComments($name, $section, $key);
+    }
+
 
     /**
      * remove a section from the two ini file.

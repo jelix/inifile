@@ -10,7 +10,7 @@ use \Jelix\IniFile\MultiIniModifier as MultiIniModifier;
 
 require_once(__DIR__.'/lib.php');
 
-class IniModifierGetTest extends PHPUnit_Framework_TestCase {
+class IniModifierNormalGetTest extends PHPUnit_Framework_TestCase {
 
     function testGetValue() {
         $parser = new testIniFileModifier('foo.ini', '
@@ -18,6 +18,7 @@ class IniModifierGetTest extends PHPUnit_Framework_TestCase {
   
 foo=bar
 anumber=98
+anumber_string = "98"
 string= "uuuuu"
 string2= "aaa
 bbb"
@@ -25,6 +26,7 @@ string3= "aaa
   multiline
 bbb"
 afloatnumber=   5.098  
+afloatnumber_string = "5.098"
 
 [aSection]
 laurent=toto
@@ -57,6 +59,7 @@ foo[key3]=ccc
 
         $this->assertEquals($parser->getValue('foo'), 'bar' );
         $this->assertEquals($parser->getValue('anumber'), 98 );
+        $this->assertEquals($parser->getValue('anumber_string'), 98 );
         $this->assertEquals($parser->getValue('string'), 'uuuuu' );
         $this->assertEquals($parser->getValue('string2'), 'aaa
 bbb');
@@ -64,6 +67,7 @@ bbb');
   multiline
 bbb');
         $this->assertEquals($parser->getValue('afloatnumber'), 5.098 );
+        $this->assertEquals($parser->getValue('afloatnumber_string'), 5.098 );
         $this->assertEquals($parser->getValue('truc','aSection'), null );
         $this->assertEquals($parser->getValue('laurent','aSection'), 'toto' );
         $this->assertEquals($parser->getValue('trucon','aSection'), true );

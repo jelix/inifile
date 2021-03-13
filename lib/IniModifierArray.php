@@ -202,6 +202,40 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
     }
 
     /**
+     * create or replace comment lines preceding an option from all ini file.
+     *
+     * @param string $name      the name of the option to find
+     * @param mixed  $comments  comment line content (if string) or array of lines contents. Each line
+     *                          will be prepended with ";" if needed
+     * @param string $section   the section where to set the item. 0 is the global section
+     * @param int    $key       for option which is an item of array, the key in the array.
+     */
+    public function setComments($name, $comments, $section = 0, $key = null)
+    {
+        foreach ($this->modifiers as $mod) {
+            if ($mod instanceof IniModifierInterface) {
+                $mod->setComments($name, $comments, $section, $key);
+            }
+        }
+    }
+
+    /**
+     * remove comment lines preceding an option from all ini file.
+     *
+     * @param string $name      the name of the option to find
+     * @param string $section   the section where to set the item. 0 is the global section
+     * @param int    $key       for option which is an item of array, the key in the array.
+     */
+    public function removeComments($name, $section = 0, $key = null)
+    {
+        foreach ($this->modifiers as $mod) {
+            if ($mod instanceof IniModifierInterface) {
+                $mod->removeComments($name, $section, $key);
+            }
+        }
+    }
+
+    /**
      * remove a section from all ini file.
      * @param int $section
      * @param bool $removePreviousComment

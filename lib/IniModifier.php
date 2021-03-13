@@ -30,7 +30,7 @@ class IniModifier extends IniReader implements IniModifierInterface
      * @param string $initialContent if the file does not exists, it takes the given content
      *                               as initial content.
      */
-    public function __construct($filename, $initialContent = '', $parsemode = parent::PR_NORMAL)
+    public function __construct($filename, $initialContent = '', $parsemode = self::PR_NORMAL)
     {
         $this->parsemode = $parsemode;
         if (!$filename) {
@@ -204,7 +204,16 @@ class IniModifier extends IniReader implements IniModifierInterface
 
         foreach ($value as $k => $v) {
             if (!$foundKeys[$k]) {
-                $this->content[$section][] = array(self::TK_ARR_VALUE, $name, $v, $k);
+                if ($this->content[$section]) {
+                    for ($pos = count($this->content[$section]) - 1; $pos >= 0; $pos--) {
+                        if ($this->content[$section][$pos][0] !== self::TK_WS && $this->content[$section][$pos][0] !== self::TK_COMMENT) {
+                            array_splice($this->content[$section], $pos + 1, 0, array(array(self::TK_ARR_VALUE, $name, $v, $k)));
+                            break;
+                        }
+                    }
+                } else {
+                    $this->content[$section][] = array(self::TK_ARR_VALUE, $name, $v, $k);
+                }
             }
         }
         $this->modified = true;
@@ -353,7 +362,7 @@ class IniModifier extends IniReader implements IniModifierInterface
             }
 
             foreach ($comments as $i => $comment) {
-                if (!str_starts_with($comment, ';')) {
+                if (substr($comment, 0, 1) !== ';') {
                     $comments[$i] = ';' . $comments[$i];
                 }
                 $comments[$i] = array(self::TK_COMMENT, $comments[$i]);
@@ -573,7 +582,7 @@ class IniModifier extends IniReader implements IniModifierInterface
                 return "on";
             }
         }
-        if ($this->parsemode === parent::PR_NORMAL) {
+        if ($this->parsemode === self::PR_NORMAL) {
             if ($value === '' ||
                 is_numeric(trim($value)) ||
                 (is_string($value) && preg_match('/^[\\w\\-\\.]*$/u', $value) &&
