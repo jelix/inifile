@@ -386,6 +386,68 @@ truc=machin2
         $parser->clearModifierFlag();
     }
 
+    function testSetArrayValueReplacingNormalValue()
+    {
+        $parser = $this->prepareParserSetValue();
+        // set a normal value
+        $parser->setValue('name', 'toto', 'othersection');
+        $expected = array(
+            0              => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_COMMENT, "  ; a comment"),
+                array(IniModifier::TK_WS, "  "),
+                array(IniModifier::TK_VALUE, 'foo', 'bar'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'aSection'     => array(
+                array(IniModifier::TK_SECTION, "[aSection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'othersection' => array(
+                array(IniModifier::TK_SECTION, "[othersection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin2'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_VALUE, 'name', 'toto'),
+            ),
+        );
+        $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
+
+        // now replace it by an array value
+        $parser->setValue('name', 'toto', 'othersection', '');
+        $expected = array(
+            0              => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_COMMENT, "  ; a comment"),
+                array(IniModifier::TK_WS, "  "),
+                array(IniModifier::TK_VALUE, 'foo', 'bar'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'aSection'     => array(
+                array(IniModifier::TK_SECTION, "[aSection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin'),
+                array(IniModifier::TK_VALUE, 'flag', 'on'),
+                array(IniModifier::TK_VALUE, 'noflag', 'off'),
+                array(IniModifier::TK_WS, ""),
+            ),
+            'othersection' => array(
+                array(IniModifier::TK_SECTION, "[othersection]"),
+                array(IniModifier::TK_VALUE, 'truc', 'machin2'),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_ARR_VALUE, 'name', 'toto', 0),
+            ),
+        );
+        $this->assertEquals($expected, $parser->getContent());
+        $this->assertTrue($parser->isModified());
+        $parser->clearModifierFlag();
+    }
+
     function testSetArrayValue2()
     {
         $content = '

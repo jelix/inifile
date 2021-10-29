@@ -107,7 +107,7 @@ class IniModifier extends IniReader implements IniModifierInterface
                     if ($key === '') {
                         $key = 0;
                     }
-                    if (!$this->_compareNewValue($item[2], $value)) {
+                    if ($item[0] == self::TK_VALUE || !$this->_compareNewValue($item[2], $value)) {
                         $this->content[$section][$k] = array(self::TK_ARR_VALUE, $name, $value, $key);
                         $this->modified = true;
                     }
