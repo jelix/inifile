@@ -344,6 +344,9 @@ class IniModifier extends IniReader implements IniModifierInterface
 
     /**
      * save the ini file.
+     *
+     * @param int|null $chmod  do chmod on the file if given
+     * @param int      $format  flags for the ini generator. See IniModifierInterface::FORMAT_*
      */
     public function save($chmod = null, $format = 0)
     {
@@ -361,6 +364,7 @@ class IniModifier extends IniReader implements IniModifierInterface
      * save the content in an new ini file.
      *
      * @param string $filename the name of the file
+     * @param int      $format  flags for the ini generator. See IniModifierInterface::FORMAT_*
      */
     public function saveAs($filename, $format = 0)
     {

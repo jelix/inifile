@@ -15,6 +15,9 @@ namespace Jelix\IniFile;
  */
 interface IniModifierInterface extends IniReaderInterface
 {
+    /**
+     * @const Indicate to not add quotes around values when generating the ini file
+     */
     const FORMAT_NO_QUOTES = 1;
 
     /**
