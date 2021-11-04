@@ -251,6 +251,7 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
                 return true;
             }
         }
+        return false;
     }
 
     /**

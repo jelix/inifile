@@ -1,5 +1,12 @@
 Changelog
 
+
+3.2.5
+=====
+
+- Fix setValue of an array item on an existing string value
+- Fix return value of `IniModifierArray::isSection()`
+
 3.2.4
 =====
 - fix `IniReader::getValue()` on associative array values
