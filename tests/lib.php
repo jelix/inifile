@@ -17,7 +17,7 @@ class testIniFileModifier extends IniModifier {
        return $this->content;
     }
     
-    function generate(){ return $this->generateIni(); }
+    function generate(){ return $this->generateIni(0); }
 
     function clearModifierFlag() {
         $this->modified = false;
@@ -27,12 +27,12 @@ class testIniFileModifier extends IniModifier {
 
 class testMultiIniFileModifier extends MultiIniModifier {
 
-    function generateMaster(){ return $this->master->generateIni(); }
+    function generateMaster(){ return $this->master->generateIni(0); }
 
-    function generateOverrider(){ return $this->overrider->generateIni(); }
+    function generateOverrider(){ return $this->overrider->generateIni(0); }
 }
 
 class testIniFileModifierArray extends IniModifierArray {
 
-    function generateIni($index){ return $this->modifiers[$index]->generateIni(); }
+    function generateIni($index){ return $this->modifiers[$index]->generateIni(0); }
 }

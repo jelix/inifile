@@ -10,7 +10,7 @@ use \Jelix\IniFile\MultiIniModifier as MultiIniModifier;
 
 require_once(__DIR__.'/lib.php');
 
-class IniModifierGetTest extends PHPUnit_Framework_TestCase {
+class IniModifierGetTest extends \PHPUnit\Framework\TestCase {
 
     function testGetValue() {
         $parser = new testIniFileModifier('foo.ini', '

@@ -8,7 +8,7 @@
 
 use \Jelix\IniFile\Util;
 
-class mergeIniObjectTest extends PHPUnit_Framework_TestCase
+class mergeIniObjectTest extends \PHPUnit\Framework\TestCase
 {
     public function testNoSection()
     {

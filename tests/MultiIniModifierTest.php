@@ -8,7 +8,7 @@
 
 require_once(__DIR__.'/lib.php');
 
-class MultiIniModifierTest extends PHPUnit_Framework_TestCase {
+class MultiIniModifierTest extends \PHPUnit\Framework\TestCase {
 
     function testGetValues() {
         $master = new testIniFileModifier('foo.ini', '

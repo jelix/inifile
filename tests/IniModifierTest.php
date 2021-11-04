@@ -10,7 +10,7 @@ use \Jelix\IniFile\MultiIniModifier as MultiIniModifier;
 
 require_once(__DIR__.'/lib.php');
 
-class IniModifierTest extends PHPUnit_Framework_TestCase {
+class IniModifierTest extends \PHPUnit\Framework\TestCase {
 
     public function testParseFile()
     {
@@ -125,7 +125,6 @@ truc=machin3
 
     /**
      * test when there is a ';' into the name (mimic parse_ini_file)
-     * @expectedException Jelix\IniFile\IniSyntaxException
      */
     public function testParseFileBadSectionName()
     {
@@ -137,6 +136,7 @@ foo=bar
 truc=machin2
 
 ';
+        $this->expectException('\Jelix\IniFile\IniSyntaxException');
         $parser = new testIniFileModifier('foo.ini', $content);
     }
 

@@ -10,7 +10,7 @@ use \Jelix\IniFile\MultiIniModifier as MultiIniModifier;
 
 require_once(__DIR__.'/lib.php');
 
-class IniModifierRenameTest extends PHPUnit_Framework_TestCase {
+class IniModifierRenameTest extends \PHPUnit\Framework\TestCase {
 
     public function testRenameSection() {
         $content = '

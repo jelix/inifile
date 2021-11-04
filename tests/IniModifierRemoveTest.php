@@ -10,7 +10,7 @@ use \Jelix\IniFile\MultiIniModifier as MultiIniModifier;
 
 require_once(__DIR__.'/lib.php');
 
-class IniModifierRemoveTest extends PHPUnit_Framework_TestCase {
+class IniModifierRemoveTest extends \PHPUnit\Framework\TestCase {
 
     function testRemove() {
 
