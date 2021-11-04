@@ -234,7 +234,7 @@ anumber=98
 afloatnumber=   5.098  
 [aSection]
 truc= true
-laurent=toto
+laurent=toto@machin.com
 isvalid = on
 
 [othersection]
@@ -261,7 +261,7 @@ anumber=98
 afloatnumber=5.098
 [aSection]
 truc=true
-laurent=toto
+laurent="toto@machin.com"
 isvalid=on
 
 [othersection]
@@ -294,5 +294,69 @@ case[key3]=ccc
         file_put_contents(TEMP_PATH.'test_IniModifier.html_cli.php', $content);
         $parser = new testIniFileModifier(TEMP_PATH.'test_IniModifier.html_cli.php');
         $this->assertEquals($result, $parser->generate());
+    }
+
+    function testSaveWithoutQuote() {
+        $content = '
+  ; a comment
+  
+foo=bar
+job= foo.b-a_r
+messageLogFormat = "%date%\t[%code%]\t%msg%\t%file%\t%line%\n"
+anumber=98
+afloatnumber=   5.098  
+[aSection]
+truc= true
+laurent=toto@machin.com
+isvalid = on
+
+[othersection]
+truc=machin2
+
+[vla]
+foo[]=aaa
+foo[]=bbb
+foo[]=ccc
+
+[sudoku]
+case[key1]=aaa
+case[ab]=bbb
+case[key3]=ccc
+
+';
+        $result = '
+  ; a comment
+  
+foo=bar
+job=foo.b-a_r
+messageLogFormat=%date%\t[%code%]\t%msg%\t%file%\t%line%\n
+anumber=98
+afloatnumber=5.098
+[aSection]
+truc=true
+laurent=toto@machin.com
+isvalid=on
+
+[othersection]
+truc=machin2
+
+[vla]
+foo[]=aaa
+foo[]=bbb
+foo[]=ccc
+
+[sudoku]
+case[key1]=aaa
+case[ab]=bbb
+case[key3]=ccc
+
+';
+        $parser = new testIniFileModifier('foo.ini', $content);
+        $this->assertEquals($result, $parser->generate(\Jelix\IniFile\IniModifierInterface::FORMAT_NO_QUOTES) );
+
+        file_put_contents(TEMP_PATH.'test_IniModifier.html_cli.php', $content);
+        $parser = new testIniFileModifier(TEMP_PATH.'test_IniModifier.html_cli.php');
+        $this->assertEquals($result, $parser->generate(\Jelix\IniFile\IniModifierInterface::FORMAT_NO_QUOTES) );
+
     }
 }

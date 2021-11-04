@@ -17,7 +17,7 @@ class testIniFileModifier extends IniModifier {
        return $this->content;
     }
     
-    function generate(){ return $this->generateIni(0); }
+    function generate($format=0){ return $this->generateIni($format); }
 
     function clearModifierFlag() {
         $this->modified = false;

@@ -249,12 +249,12 @@ class MultiIniModifier implements IniModifierInterface
     /**
      * save the ini files.
      */
-    public function save($chmod = null)
+    public function save($chmod = null, $format = 0)
     {
         if ($this->master instanceof IniModifierInterface) {
-            $this->master->save($chmod);
+            $this->master->save($chmod, $format);
         }
-        $this->overrider->save($chmod);
+        $this->overrider->save($chmod, $format);
     }
 
     /**

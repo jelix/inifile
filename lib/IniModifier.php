@@ -345,10 +345,10 @@ class IniModifier extends IniReader implements IniModifierInterface
     /**
      * save the ini file.
      */
-    public function save($chmod = null)
+    public function save($chmod = null, $format = 0)
     {
         if ($this->modified) {
-            if (false === @file_put_contents($this->filename, $this->generateIni())) {
+            if (false === @file_put_contents($this->filename, $this->generateIni($format))) {
                 throw new IniException('Impossible to write into '.$this->filename);
             } elseif ($chmod) {
                 chmod($this->filename, $chmod);
@@ -362,9 +362,9 @@ class IniModifier extends IniReader implements IniModifierInterface
      *
      * @param string $filename the name of the file
      */
-    public function saveAs($filename)
+    public function saveAs($filename, $format = 0)
     {
-        file_put_contents($filename, $this->generateIni());
+        file_put_contents($filename, $this->generateIni($format));
     }
 
     /**
@@ -379,7 +379,7 @@ class IniModifier extends IniReader implements IniModifierInterface
         return $this->modified;
     }
 
-    protected function generateIni()
+    protected function generateIni($format)
     {
         $content = '';
         $lastToken = null;
@@ -401,13 +401,13 @@ class IniModifier extends IniReader implements IniModifierInterface
                     $content .= $item[1]."\n";
                     break;
                   case self::TK_VALUE:
-                        $content .= $item[1].'='.$this->getIniValue($item[2])."\n";
+                        $content .= $item[1].'='.$this->getIniValue($item[2], $format)."\n";
                     break;
                   case self::TK_ARR_VALUE:
                       if (is_numeric($item[3])) {
-                          $content .= $item[1].'[]='.$this->getIniValue($item[2])."\n";
+                          $content .= $item[1].'[]='.$this->getIniValue($item[2], $format)."\n";
                       } else {
-                          $content .= $item[1].'['.$item[3].']='.$this->getIniValue($item[2])."\n";
+                          $content .= $item[1].'['.$item[3].']='.$this->getIniValue($item[2], $format)."\n";
                       }
 
                     break;
@@ -422,7 +422,7 @@ class IniModifier extends IniReader implements IniModifierInterface
         return $content;
     }
 
-    protected function getIniValue($value)
+    protected function getIniValue($value, $format)
     {
         if (is_bool($value)) {
             if ($value === false) {
@@ -433,8 +433,9 @@ class IniModifier extends IniReader implements IniModifierInterface
         }
         if ($value === '' ||
             is_numeric(trim($value)) ||
-            (is_string($value) && preg_match('/^[\\w\\-\\.]*$/u', $value) &&
-                strpos("\n", $value) === false)
+            (is_string($value) && preg_match('/^[\\w\\-.]*$/u', $value) &&
+                strpos("\n", $value) === false) ||
+            $format & IniModifierInterface::FORMAT_NO_QUOTES
         ) {
             return $value;
         } else {

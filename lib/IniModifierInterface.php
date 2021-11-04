@@ -15,6 +15,8 @@ namespace Jelix\IniFile;
  */
 interface IniModifierInterface extends IniReaderInterface
 {
+    const FORMAT_NO_QUOTES = 1;
+
     /**
      * modify an option in the ini file. If the option doesn't exist,
      * it is created.
@@ -60,7 +62,7 @@ interface IniModifierInterface extends IniReaderInterface
     /**
      * save the ini file.
      */
-    public function save($chmod = null);
+    public function save($chmod = null, $format = 0);
 
     /**
      * says if the ini content has been modified.

@@ -1,5 +1,11 @@
 Changelog
 
+3.3.0
+=====
+
+- support of a new flag FORMAT_NO_QUOTES as parameter for `IniModifier::save()`. Allow to generate an ini file without
+  quotes in values.
+  It can be useful to generate an ini file compatible with some software, like Postgresql.
 
 3.2.5
 =====

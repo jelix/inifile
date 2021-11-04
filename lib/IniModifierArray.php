@@ -219,11 +219,11 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
     /**
      * save the ini files.
      */
-    public function save($chmod = null)
+    public function save($chmod = null, $format = 0)
     {
         foreach ($this->modifiers as $mod) {
             if ($mod instanceof IniModifierInterface) {
-                $mod->save($chmod);
+                $mod->save($chmod, $format);
             }
         }
     }
