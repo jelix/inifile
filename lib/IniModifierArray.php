@@ -270,6 +270,7 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
 
     // ---------------------------------------------- \IteratorAggregate
 
+    #[\ReturnTypeWillChange]
     public function getIterator()
     {
         return new \ArrayIterator($this->modifiers);
@@ -277,6 +278,7 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
 
     // ---------------------------------------------- \ArrayAccess
 
+    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         $value = $this->checkValue('A given value', $value);
@@ -288,24 +290,27 @@ class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \Arr
         $this->setReversedArray();
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetExists($offset)
     {
         return isset($this->modifiers[$offset]);
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         unset($this->modifiers[$offset]);
         $this->setReversedArray();
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return isset($this->modifiers[$offset]) ? $this->modifiers[$offset] : null;
     }
 
     // ---------------------------------------------- \Countable
-
+    #[\ReturnTypeWillChange]
     public function count()
     {
         return count($this->modifiers);

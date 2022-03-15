@@ -1,5 +1,9 @@
 Changelog
 
+3.3.1
+=====
+- Fix compatibility with PHP 8.1
+
 3.3.0
 =====
 
