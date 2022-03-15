@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<phpunit>
+<phpunit
+        convertDeprecationsToExceptions="true"
+>
   <testsuites>
     <testsuite name="Ini tools">
       <file>IniModifierTest.php</file>
