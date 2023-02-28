@@ -848,5 +848,39 @@ assoc[ov]="other value"
         $this->assertTrue($ini->isModified());
         $ini->clearModifierFlag();
     }
+    public function testSetSimpleValue() {
+        $content = 'foo=bar
+[hello]
+word=world
+';
+        $ini = new testIniFileModifier('foo.ini', $content);
+        $ini->setValue('bar', 'baz');
+        $ini->setValue('bar2', 'baz2', 0);
+        $ini->setValue('bar3', 'baz3', '0');
+        $ini->setValue('bar4', 'baz4', '');
+        $expected = 'foo=bar
+bar=baz
+bar2=baz2
+bar3=baz3
+[hello]
+word=world
+';
+        $this->assertEquals($expected, $ini->generate());
+        $this->assertTrue($ini->isModified());
+        $ini->clearModifierFlag();
+    }
 
+    public function testSetValueEmptyFile()
+    {
+
+        $ini = new testIniFileModifier('foo.ini');
+        $ini->setValue('after_login', 'master_admin~default:index');
+        $ini->setValue('timeout', '30');
+        $expected = 'after_login="master_admin~default:index"
+timeout=30
+';
+        $this->assertEquals($expected, $ini->generate());
+        $this->assertTrue($ini->isModified());
+        $ini->clearModifierFlag();
+    }
 }

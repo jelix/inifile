@@ -80,7 +80,11 @@ class IniReader implements IniReaderInterface
 
     public function isEmpty()
     {
-        return (count($this->content) == 0);
+        $c = count($this->content);
+        if ( $c === 0 || ($c == 1 && count($this->content[0]) === 0)) {
+            return true;
+        }
+        return false;
     }
 
     /**

@@ -12,6 +12,18 @@ require_once(__DIR__.'/lib.php');
 
 class IniModifierTest extends \PHPUnit\Framework\TestCase {
 
+    public function testParseEmptyFile()
+    {
+        $content = '';
+        $expected = array(
+            0 => array(
+            ),
+        );
+        $parser = new testIniFileModifier('foo.ini', $content);
+        $this->assertTrue($parser->isEmpty());
+        $this->assertEquals($expected, $parser->getContent());
+    }
+
     public function testParseFile()
     {
         $content = 'foo=bar';
