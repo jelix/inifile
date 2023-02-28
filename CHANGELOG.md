@@ -1,5 +1,12 @@
 Changelog
 
+3.3.2
+=====
+
+Fix the add of an extra `[0]` section, when saving an ini file that was
+empty before adding some values.
+
+
 3.3.1
 =====
 - Fix compatibility with PHP 8.1
