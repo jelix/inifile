@@ -1,7 +1,5 @@
 <?xml version="1.0"?>
-<phpunit
-        convertDeprecationsToExceptions="true"
->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.0/phpunit.xsd" cacheDirectory=".phpunit.cache">
   <testsuites>
     <testsuite name="Ini tools">
       <file>IniModifierTest.php</file>
