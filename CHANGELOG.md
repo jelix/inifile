@@ -3,6 +3,7 @@ Changelog
 next
 =====
 
+- new method `Utils::arrayToIniString()`
 - Fix an issue when given `''` as a section name to methods of `IniModifier`.
 - The library is compatible with PHP 8.2 and 8.3.
 
