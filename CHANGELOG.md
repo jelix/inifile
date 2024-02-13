@@ -1,6 +1,6 @@
 Changelog
 
-next
+3.4.0
 =====
 
 - `IniModifier::save()`: support of new flag `FORMAT_SPACE_AROUND_EQUAL` to add
