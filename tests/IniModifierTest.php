@@ -371,4 +371,49 @@ case[key3]=ccc
         $this->assertEquals($result, $parser->generate(\Jelix\IniFile\IniModifierInterface::FORMAT_NO_QUOTES) );
 
     }
+
+    function testSaveSpaceAroundEqual() {
+        $content = '
+  ; a comment
+  
+foo=bar
+job= foo.b-a_r
+messageLogFormat = "%date%\t[%code%]\t%msg%\t%file%\t%line%\n"
+anumber=98
+afloatnumber = 5.098  
+[aSection]
+truc= true
+
+[vla]
+foo[]=aaa
+foo[]=bbb
+
+[sudoku]
+case[key1]=aaa
+
+';
+        $result = '
+  ; a comment
+  
+foo = bar
+job = foo.b-a_r
+messageLogFormat = "%date%\t[%code%]\t%msg%\t%file%\t%line%\n"
+anumber = 98
+afloatnumber = 5.098
+[aSection]
+truc = true
+
+[vla]
+foo[] = aaa
+foo[] = bbb
+
+[sudoku]
+case[key1] = aaa
+
+';
+        $parser = new testIniFileModifier('foo.ini', $content);
+        $this->assertEquals($result, $parser->generate(\Jelix\IniFile\IniModifierInterface::FORMAT_SPACE_AROUND_EQUAL) );
+
+
+    }
 }

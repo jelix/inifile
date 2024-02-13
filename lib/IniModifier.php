@@ -396,10 +396,17 @@ class IniModifier extends IniReader implements IniModifierInterface
         return $this->modified;
     }
 
+    /**
+     * @param integer $format a combination of IniModifierInterface::FORMAT_* flags
+     * @return string the content as INI format
+     */
     protected function generateIni($format)
     {
         $content = '';
         $lastToken = null;
+
+        $equal = $format & self::FORMAT_SPACE_AROUND_EQUAL?' = ':'=';
+
         foreach ($this->content as $sectionname => $section) {
             foreach ($section as $item) {
                 $lastToken = $item[0];
@@ -418,13 +425,13 @@ class IniModifier extends IniReader implements IniModifierInterface
                     $content .= $item[1]."\n";
                     break;
                   case self::TK_VALUE:
-                        $content .= $item[1].'='.$this->getIniValue($item[2], $format)."\n";
+                        $content .= $item[1].$equal.$this->getIniValue($item[2], $format)."\n";
                     break;
                   case self::TK_ARR_VALUE:
                       if (is_numeric($item[3])) {
-                          $content .= $item[1].'[]='.$this->getIniValue($item[2], $format)."\n";
+                          $content .= $item[1].'[]'.$equal.$this->getIniValue($item[2], $format)."\n";
                       } else {
-                          $content .= $item[1].'['.$item[3].']='.$this->getIniValue($item[2], $format)."\n";
+                          $content .= $item[1].'['.$item[3].']'.$equal.$this->getIniValue($item[2], $format)."\n";
                       }
 
                     break;
