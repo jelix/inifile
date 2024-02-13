@@ -2,7 +2,7 @@
 
 /**
  * @author     Laurent Jouanneau
- * @copyright  2008-2019 Laurent Jouanneau
+ * @copyright  2008-2024 Laurent Jouanneau
  *
  * @link       http://jelix.org
  * @licence    http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public Licence, see LICENCE file
@@ -30,16 +30,16 @@ class IniModifier extends IniReader implements IniModifierInterface
      * @param string $initialContent if the file does not exists, it takes the given content
      *                               as initial content.
      */
-    public function __construct($filename, $initialContent = '')
+    public function __construct($filename, $initialContent = '', $format = 0)
     {
         if (!$filename) {
             throw new IniInvalidArgumentException('Filename should not be empty');
         }
         $this->filename = $filename;
         if (file_exists($filename) && is_file($filename)) {
-            $this->parse(preg_split("/(\r\n|\n|\r)/", file_get_contents($filename)));
+            $this->parse(preg_split("/(\r\n|\n|\r)/", file_get_contents($filename)), $format);
         } elseif ($initialContent != '') {
-            $this->parse(preg_split("/(\r\n|\n|\r)/", $initialContent));
+            $this->parse(preg_split("/(\r\n|\n|\r)/", $initialContent), $format);
         }
         else {
             $this->content = array(0 => array());

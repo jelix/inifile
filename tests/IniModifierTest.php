@@ -1,7 +1,7 @@
 <?php
 /**
 * @author      Laurent Jouanneau
-* @copyright   2008-2015 Laurent Jouanneau
+* @copyright   2008-2024 Laurent Jouanneau
 * @link        http://www.jelix.org
 * @licence     GNU Lesser General Public Licence see LICENCE file or http://www.gnu.org/licenses/lgpl.html
 */
@@ -42,6 +42,7 @@ class IniModifierTest extends \PHPUnit\Framework\TestCase {
   ; a comment
   
 foo=bar
+# other comment
 ';
         $expected = array(
             0 => array(
@@ -49,11 +50,26 @@ foo=bar
                 array(IniModifier::TK_COMMENT, "  ; a comment"),
                 array(IniModifier::TK_WS, "  "),
                 array(IniModifier::TK_VALUE, 'foo', 'bar'),
+                array(IniModifier::TK_WS, "# other comment"),
                 array(IniModifier::TK_WS, ""),
             ),
         );
 
         $parser = new testIniFileModifier('foo.ini', $content);
+        $this->assertEquals($expected, $parser->getContent());
+
+        $expected = array(
+            0 => array(
+                array(IniModifier::TK_WS, ""),
+                array(IniModifier::TK_COMMENT, "  ; a comment"),
+                array(IniModifier::TK_WS, "  "),
+                array(IniModifier::TK_VALUE, 'foo', 'bar'),
+                array(IniModifier::TK_COMMENT, "# other comment"),
+                array(IniModifier::TK_WS, ""),
+            ),
+        );
+
+        $parser = new testIniFileModifier('foo.ini', $content, \Jelix\IniFile\IniReaderInterface::FORMAT_COMMENT_HASH);
         $this->assertEquals($expected, $parser->getContent());
     }
 
