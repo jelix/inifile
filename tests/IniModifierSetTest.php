@@ -862,6 +862,7 @@ word=world
 bar=baz
 bar2=baz2
 bar3=baz3
+bar4=baz4
 [hello]
 word=world
 ';

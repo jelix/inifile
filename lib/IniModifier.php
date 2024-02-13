@@ -60,7 +60,9 @@ class IniModifier extends IniReader implements IniModifierInterface
         if (!preg_match('/^[^\\[\\]]*$/', $name)) {
             throw new IniInvalidArgumentException("Invalid value name $name");
         }
-
+        if (!$section) {
+            $section = 0;
+        }
         if (is_array($value)) {
             if ($key !== null) {
                 throw new IniInvalidArgumentException('You cannot indicate a key for an array value');
@@ -221,6 +223,10 @@ class IniModifier extends IniReader implements IniModifierInterface
      */
     public function removeValue($name, $section = 0, $key = null, $removePreviousComment = true)
     {
+        if (!$section) {
+            $section = 0;
+        }
+
         if ($section === 0 && $name == '') {
             return;
         }
@@ -309,6 +315,10 @@ class IniModifier extends IniReader implements IniModifierInterface
      */
     public function removeSection($section = 0, $removePreviousComment = true)
     {
+        if (!$section) {
+            $section = 0;
+        }
+
         if ($section === 0 || !isset($this->content[$section])) {
             return;
         }
