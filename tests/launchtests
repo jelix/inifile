@@ -5,7 +5,7 @@ set -e
 export APP_USER_ID=${APP_USER_ID:-$(id -u)}
 export APP_GROUP_ID=${APP_GROUP_ID:-$(id -g)}
 export DISPLAY_ERRORS=on
-export PHP_VERSION=${PHP_VERSION:-7.4}
+export PHP_VERSION=${PHP_VERSION:-8.4}
 
 IMAGE_NAME=inifile_tests-$PHP_VERSION
 SCRIPTDIR="$( cd "$(dirname "$0")" ; pwd -P )"

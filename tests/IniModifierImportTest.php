@@ -88,6 +88,9 @@ foo[]=ccc
 
 arr[a]=f
 
+[vla]
+foo[]=eee
+
 ';
         $ini2 = new testIniFileModifier('foo.ini', $content2);
 
@@ -135,7 +138,7 @@ assoc[aa]=0
 truc=machin2
 
 [vla]
-foo[]=aaa
+foo[]=eee
 ; key comment
 foo[]=bbb
 foo[]=ccc
@@ -151,7 +154,6 @@ foo[]=bbb
 foo[]=ccc
 
 arr[a]=f
-
 ';
         $this->assertEquals($result, $ini->generate());
 

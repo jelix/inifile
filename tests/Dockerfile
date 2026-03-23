@@ -1,4 +1,4 @@
-ARG php_version
+ARG php_version=8.4
 
 FROM 3liz/liz-php-cli:${php_version}
 
