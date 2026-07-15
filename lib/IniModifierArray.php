@@ -18,27 +18,34 @@ namespace Jelix\IniFile;
 class IniModifierArray implements IniModifierInterface, \IteratorAggregate, \ArrayAccess, \Countable
 {
     /**
+     * List of all modifier objects. The last one has priority to the first one.
      * @var \Jelix\IniFile\IniReaderInterface[]
      */
     protected $modifiers;
 
     /**
+     * Reverse list of $modifiers, to ease the implementation of some methods
+     *
      * @var \Jelix\IniFile\IniReaderInterface[]
      */
     protected $reversedModifiers;
 
     /**
+     * The last modifier object of the $modifiers list.
+     * It is the one that has priority to the others and into which we can write.
+     *
      * @var \Jelix\IniFile\IniReaderInterface
      */
     protected $lastModifier;
 
     /**
+     * The key of the last modifier object of the $modifiers list.
      * @var mixed
      */
     protected $lastModifierKey;
 
     /**
-     * set all modifiers objects. The last one has priority to the first one.
+     * Set all modifier objects. The last one has priority to the first one.
      *
      * @param \Jelix\IniFile\IniReaderInterface[]|string[] $modifiers the list of ini file names or ini reader/modifier objects
      */

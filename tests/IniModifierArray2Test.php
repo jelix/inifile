@@ -251,4 +251,137 @@ foo=baz
         $this->assertNull($one->getValue('foo', 's'));
         $this->assertNull($two->getValue('foo', 's'));
     }
+
+    function testSetPreferedFilePicksMappedWritableModifierOverOtherRules() {
+        $one = new testIniFileModifier('one.ini', '
+[s]
+foo=1
+');
+        $two = new testIniFileModifier('two.ini', '
+[s]
+foo=2
+');
+        $three = new testIniFileModifier('three.ini', '
+[s]
+foo=3
+');
+        $multi = new testIniFileModifierArray2(array($one, $two, $three));
+
+        // without the mapping, rule 1 would pick $three (closest to end)
+        $this->assertSame($three, $multi->resolveTarget('foo', 's'));
+
+        $multi->setPreferedFile(array('s'), 'one.ini');
+        $this->assertSame($one, $multi->resolveTarget('foo', 's'));
+
+        $multi->setValue('foo', 'X', 's');
+        $this->assertEquals('X', $one->getValue('foo', 's'));
+        $this->assertEquals('2', $two->getValue('foo', 's'));
+        $this->assertEquals('3', $three->getValue('foo', 's'));
+    }
+
+    function testSetPreferedFileFallsThroughWhenMappedModifierIsReadOnly() {
+        $one = new IniModifierReadOnly(new testIniFileModifier('one.ini', '
+[s]
+foo=readonly
+'));
+        $two = new testIniFileModifier('two.ini', '
+[s]
+foo=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+
+        $multi->setPreferedFile(array('s'), 'one.ini');
+        $this->assertSame($two, $multi->resolveTarget('foo', 's'));
+
+        $multi->setValue('foo', 'X', 's');
+        $this->assertEquals('X', $two->getValue('foo', 's'));
+        $this->assertEquals('readonly', $one->getValue('foo', 's'));
+    }
+
+    function testSetPreferedFileCreatesModifierWhenFileIsAbsentFromTheStack() {
+        $one = new testIniFileModifier('one.ini', '
+other=1
+');
+        $two = new testIniFileModifier('two.ini', '
+other=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+
+        $multi->setPreferedFile(array('s'), TEMP_PATH.'newfile.ini');
+        $this->assertCount(2, $multi);
+
+        $target = $multi->resolveTarget('foo', 's');
+        $this->assertNotSame($one, $target);
+        $this->assertNotSame($two, $target);
+        $this->assertEquals(TEMP_PATH.'newfile.ini', $target->getFileName());
+
+        $multi->setValue('foo', 'X', 's');
+        $this->assertCount(3, $multi);
+        $this->assertSame($target, $multi[TEMP_PATH.'newfile.ini']);
+        $this->assertEquals('X', $target->getValue('foo', 's'));
+
+        // the newly created modifier sits right before the previous last element
+        $keys = array();
+        foreach ($multi as $k => $mod) {
+            $keys[] = $k;
+        }
+        $this->assertEquals(array(0, TEMP_PATH.'newfile.ini', 1), $keys);
+    }
+
+    function testSetPreferedFileResolvesBareFilenameAgainstConstructorDirectory() {
+        $one = new testIniFileModifier('one.ini', '
+other=1
+');
+        $multi = new testIniFileModifierArray2(array($one), TEMP_PATH);
+
+        $multi->setPreferedFile(array('s'), 'newfile.ini');
+        $target = $multi->resolveTarget('foo', 's');
+        $this->assertEquals(rtrim(TEMP_PATH, '/').'/newfile.ini', $target->getFileName());
+    }
+
+    function testSetPreferedFileKeepsBareFilenameWhenNoDirectoryGiven() {
+        $one = new testIniFileModifier('one.ini', '
+other=1
+');
+        $multi = new testIniFileModifierArray2(array($one));
+
+        $multi->setPreferedFile(array('s'), 'newfile.ini');
+        $target = $multi->resolveTarget('foo', 's');
+        $this->assertEquals('newfile.ini', $target->getFileName());
+    }
+
+    function testSetPreferedFileWithMultipleSectionsMappedToSameFile() {
+        $one = new testIniFileModifier('one.ini', '
+[s1]
+foo=1
+[s2]
+bar=1
+');
+        $two = new testIniFileModifier('two.ini', '
+[s1]
+foo=2
+[s2]
+bar=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+
+        $multi->setPreferedFile(array('s1', 's2'), 'one.ini');
+        $this->assertSame($one, $multi->resolveTarget('foo', 's1'));
+        $this->assertSame($one, $multi->resolveTarget('bar', 's2'));
+    }
+
+    function testUnmappedSectionStillFollowsTheExistingRules() {
+        $one = new testIniFileModifier('one.ini', '
+[s]
+foo=1
+');
+        $two = new testIniFileModifier('two.ini', '
+[s]
+foo=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+
+        $multi->setPreferedFile(array('other'), 'one.ini');
+        $this->assertSame($two, $multi->resolveTarget('foo', 's'));
+    }
 }

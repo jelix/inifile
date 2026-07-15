@@ -23,6 +23,47 @@ namespace Jelix\IniFile;
 class IniModifierArray2 extends IniModifierArray
 {
     /**
+     * map of section name => filename, populated by setPreferedFile().
+     * @var array
+     */
+    protected $preferedFileBySection = array();
+
+    /**
+     * @var string|null directory used to resolve bare filenames given to setPreferedFile()
+     */
+    protected $preferedFilesDirectory;
+
+    /**
+     * @param \Jelix\IniFile\IniReaderInterface[]|string[] $modifiers the list of ini file names or ini reader/modifier objects
+     * @param string|null $preferedFilesDirectory directory into which bare filenames given to
+     *                                             setPreferedFile() (without any directory part)
+     *                                             should be resolved
+     */
+    public function __construct(array $modifiers, $preferedFilesDirectory = null)
+    {
+        parent::__construct($modifiers);
+        $this->preferedFilesDirectory = $preferedFilesDirectory;
+    }
+
+    /**
+     * indicate into which ini file the given sections should be stored, when their value
+     * is modified with setValue()/setValues(), in priority over the other resolution rules.
+     *
+     * @param string[] $sections list of section names
+     * @param string $filename the ini file. If it is a bare filename (no directory part),
+     *                          it is resolved into the directory given to the constructor.
+     */
+    public function setPreferedFile($sections, $filename)
+    {
+        if ($this->preferedFilesDirectory !== null && basename($filename) === $filename) {
+            $filename = rtrim($this->preferedFilesDirectory, '/').'/'.$filename;
+        }
+        foreach ($sections as $section) {
+            $this->preferedFileBySection[$section] = $filename;
+        }
+    }
+
+    /**
      * modify an option in the most relevant ini file of the stack. If the option doesn't exist,
      * it is created into the modifiable file closest to the end of the list.
      *
@@ -63,6 +104,25 @@ class IniModifierArray2 extends IniModifierArray
      */
     protected function resolveTargetModifier($name, $section, $key = null)
     {
+        if (!$section) {
+            $section = 0;
+        }
+
+        if (isset($this->preferedFileBySection[$section])) {
+            $filename = $this->preferedFileBySection[$section];
+            $mod = $this->findModifierByFileName($filename);
+            if ($mod === null) {
+                $mod = new IniModifier($filename);
+                $this->insertModifierBeforeLast($filename, $mod);
+
+                return $mod;
+            }
+            if ($mod instanceof IniModifierInterface) {
+                return $mod;
+            }
+            // else: the file matching the section exists but is read-only, fall through
+        }
+
         $fallback = null;         // closest-to-end modifiable modifier
         $sectionOnlyMatch = null; // closest-to-end modifiable modifier having the section
 
@@ -82,5 +142,43 @@ class IniModifierArray2 extends IniModifierArray
         }
 
         return $sectionOnlyMatch !== null ? $sectionOnlyMatch : $fallback;
+    }
+
+    /**
+     * @param string $filename
+     * @return \Jelix\IniFile\IniReaderInterface|null
+     */
+    protected function findModifierByFileName($filename)
+    {
+        foreach ($this->modifiers as $mod) {
+            if ($mod->getFileName() === $filename) {
+                return $mod;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * insert the given modifier into $this->modifiers, keyed by its filename, right before
+     * the current last (highest priority) modifier, so it keeps ultimate priority.
+     *
+     * @param string $filename
+     */
+    protected function insertModifierBeforeLast($filename, IniModifierInterface $mod)
+    {
+        // $this->lastModifierKey cannot be used here: array_reverse() reindexes purely
+        // numeric keys, so it does not reliably point to the true key in $this->modifiers.
+        $keys = array_keys($this->modifiers);
+        $lastKey = end($keys);
+        $newModifiers = array();
+        foreach ($this->modifiers as $k => $m) {
+            if ($k === $lastKey) {
+                $newModifiers[$filename] = $mod;
+            }
+            $newModifiers[$k] = $m;
+        }
+        $this->modifiers = $newModifiers;
+        $this->setReversedArray();
     }
 }
