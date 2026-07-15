@@ -42,7 +42,7 @@ class testIniFileModifierArray2 extends IniModifierArray2 {
 
     function generateIni($index){ return $this->modifiers[$index]->generateIni(0); }
 
-    function resolveTarget($name, $section = 0, $key = null) {
-        return $this->resolveTargetModifier($name, $section, $key);
+    function resolveTarget($name, $section = 0) {
+        return $this->resolveTargetModifier($name, $section);
     }
 }

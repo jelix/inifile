@@ -8,6 +8,7 @@
 
 require_once(__DIR__.'/lib.php');
 
+use Jelix\IniFile\IniException;
 use \Jelix\IniFile\IniModifierReadOnly;
 
 class IniModifierArray2Test extends \PHPUnit\Framework\TestCase {
@@ -174,18 +175,9 @@ foo=2
 
         $this->assertNull($multi->resolveTarget('foo', 's'));
 
-        $caught = null;
-        set_error_handler(function ($errno, $msg) use (&$caught) {
-            $caught = array($errno, $msg);
-            return true;
-        });
-        $multi->setValue('foo', 'X', 's');
-        restore_error_handler();
+        $this->expectException(IniException::class);
 
-        $this->assertNotNull($caught);
-        $this->assertEquals(E_USER_WARNING, $caught[0]);
-        $this->assertEquals('1', $one->getValue('foo', 's'));
-        $this->assertEquals('2', $two->getValue('foo', 's'));
+        $multi->setValue('foo', 'X', 's');
     }
 
     function testSetValuesRoutesEachParameterIndependently() {

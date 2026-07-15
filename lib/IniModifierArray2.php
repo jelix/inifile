@@ -46,7 +46,7 @@ class IniModifierArray2 extends IniModifierArray
     }
 
     /**
-     * indicate into which ini file the given sections should be stored, when their value
+     * Indicate into which ini file the given sections should be stored, when their value
      * is modified with setValue()/setValues(), in priority over the other resolution rules.
      *
      * @param string[] $sections list of section names
@@ -64,7 +64,7 @@ class IniModifierArray2 extends IniModifierArray
     }
 
     /**
-     * modify an option in the most relevant ini file of the stack. If the option doesn't exist,
+     * Modify an option in the most relevant ini file of the stack. If the option doesn't exist,
      * it is created into the modifiable file closest to the end of the list.
      *
      * @param string $name    the name of the option to modify
@@ -74,16 +74,15 @@ class IniModifierArray2 extends IniModifierArray
      */
     public function setValue($name, $value, $section = 0, $key = null)
     {
-        $target = $this->resolveTargetModifier($name, $section, $key);
+        $target = $this->resolveTargetModifier($name, $section);
         if ($target === null) {
-            trigger_error('None of the ini contents is alterable', E_USER_WARNING);
-            return;
+            throw new IniException('None of the ini contents is alterable');
         }
         $target->setValue($name, $value, $section, $key);
     }
 
     /**
-     * modify several options. Each option may end up in a different ini file of the stack,
+     * Modify several options. Each option may end up in a different ini file of the stack,
      * depending on where it is the most relevant, so options are routed one by one.
      *
      * @param array  $values  associated array with key=>value
@@ -99,10 +98,9 @@ class IniModifierArray2 extends IniModifierArray
     /**
      * @param string $name
      * @param string $section
-     * @param string $key
      * @return \Jelix\IniFile\IniModifierInterface|null
      */
-    protected function resolveTargetModifier($name, $section, $key = null)
+    protected function resolveTargetModifier($name, $section)
     {
         if (!$section) {
             $section = 0;
@@ -133,7 +131,7 @@ class IniModifierArray2 extends IniModifierArray
             if ($fallback === null) {
                 $fallback = $mod;
             }
-            if ($mod->getValue($name, $section, $key) !== null) {
+            if ($mod->getValue($name, $section) !== null) {
                 return $mod;
             }
             if ($sectionOnlyMatch === null && $mod->isSection($section)) {
