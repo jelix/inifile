@@ -29,15 +29,14 @@ class IniModifierArray2 extends IniModifierArray
     protected $preferedFileBySection = array();
 
     /**
-     * @var string|null directory used to resolve bare filenames given to setPreferedFile()
+     * @var string|null directory used to resolve filenames given to setPreferedFile()
      */
     protected $preferedFilesDirectory;
 
     /**
      * @param \Jelix\IniFile\IniReaderInterface[]|string[] $modifiers the list of ini file names or ini reader/modifier objects
-     * @param string|null $preferedFilesDirectory directory into which bare filenames given to
-     *                                             setPreferedFile() (without any directory part)
-     *                                             should be resolved
+     * @param string|null $preferedFilesDirectory directory into which filenames with only relative path
+     *                                            given to setPreferedFile() should be resolved
      */
     public function __construct(array $modifiers, $preferedFilesDirectory = null)
     {
@@ -50,12 +49,12 @@ class IniModifierArray2 extends IniModifierArray
      * is modified with setValue()/setValues(), in priority over the other resolution rules.
      *
      * @param string[] $sections list of section names
-     * @param string $filename the ini file. If it is a bare filename (no directory part),
+     * @param string $filename the ini file. If it is a relative path filename,
      *                          it is resolved into the directory given to the constructor.
      */
     public function setPreferedFile($sections, $filename)
     {
-        if ($this->preferedFilesDirectory !== null && basename($filename) === $filename) {
+        if ($this->preferedFilesDirectory !== null && $filename[0] != '/') {
             $filename = rtrim($this->preferedFilesDirectory, '/').'/'.$filename;
         }
         foreach ($sections as $section) {

@@ -88,7 +88,7 @@ class Util
      * merge two simple StdClass object.
      *
      * @param object $baseContent     the object which receives new properties
-     * @param object $contentToImport the object providing new properties
+     * @param object|array $contentToImport the object providing new properties
      * @param int    $flags           a combination of constants NOT_MERGE_*, NORMAL_MERGE_*
      * @param array  $ignoredSection  list of sections or top level parameters that
      *                                should not be merged
