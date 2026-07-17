@@ -13,7 +13,8 @@ namespace Jelix\IniFile;
 /**
  * Like IniModifierArray, but setValue()/setValues() write into whichever modifiable ini file
  * of the stack is the most relevant for the given parameter, instead of always the last one:
- * - the modifiable file closest to the end of the list that already has the section and the parameter
+ * - the prefered modifiable file for the section, if any (see method `setPreferedFile()` or ini attribute `@preferedFile`)
+ * - else the modifiable file closest to the end of the list that already has the section and the parameter
  * - else the modifiable file closest to the end of the list that has the section
  * - else the modifiable file closest to the end of the list
  *
@@ -42,6 +43,15 @@ class IniModifierArray2 extends IniModifierArray
     {
         parent::__construct($modifiers);
         $this->preferedFilesDirectory = $preferedFilesDirectory;
+
+        foreach ($this->modifiers as $mod) {
+            if (!method_exists($mod, 'getPreferedFiles')) {
+                continue;
+            }
+            foreach ($mod->getPreferedFiles() as $section => $filename) {
+                $this->preferedFileBySection[$section] = $this->resolvePreferedFilename($filename);
+            }
+        }
     }
 
     /**
@@ -54,12 +64,23 @@ class IniModifierArray2 extends IniModifierArray
      */
     public function setPreferedFile($sections, $filename)
     {
-        if ($this->preferedFilesDirectory !== null && $filename[0] != '/') {
-            $filename = rtrim($this->preferedFilesDirectory, '/').'/'.$filename;
-        }
+        $filename = $this->resolvePreferedFilename($filename);
         foreach ($sections as $section) {
             $this->preferedFileBySection[$section] = $filename;
         }
+    }
+
+    /**
+     * @param string $filename
+     * @return string
+     */
+    protected function resolvePreferedFilename($filename)
+    {
+        if ($this->preferedFilesDirectory !== null && $filename[0] != '/') {
+            return rtrim($this->preferedFilesDirectory, '/').'/'.$filename;
+        }
+
+        return $filename;
     }
 
     /**

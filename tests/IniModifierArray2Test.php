@@ -376,4 +376,65 @@ foo=2
         $multi->setPreferedFile(array('other'), 'one.ini');
         $this->assertSame($two, $multi->resolveTarget('foo', 's'));
     }
+
+    function testConstructorAutoPopulatesFromModifiersPreferedFiles() {
+        $one = new testIniFileModifier('one.ini', '
+; @preferedFile two.ini
+[s]
+foo=1
+');
+        $two = new testIniFileModifier('two.ini', '
+[s]
+foo=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+
+        $this->assertSame($two, $multi->resolveTarget('foo', 's'));
+    }
+
+    function testConstructorLaterModifierPreferenceOverridesEarlierOne() {
+        $one = new testIniFileModifier('one.ini', '
+; @preferedFile one.ini
+[s]
+foo=1
+');
+        $two = new testIniFileModifier('two.ini', '
+; @preferedFile three.ini
+[s]
+foo=2
+');
+        $three = new testIniFileModifier('three.ini', '
+[s]
+foo=3
+');
+        $multi = new testIniFileModifierArray2(array($one, $two, $three));
+
+        $this->assertSame($three, $multi->resolveTarget('foo', 's'));
+    }
+
+    function testConstructorResolvesRelativePreferedFileAgainstDirectory() {
+        $one = new testIniFileModifier('one.ini', '
+; @preferedFile newfile.ini
+[s]
+foo=1
+');
+        $multi = new testIniFileModifierArray2(array($one), TEMP_PATH);
+
+        $target = $multi->resolveTarget('foo', 's');
+        $this->assertEquals(rtrim(TEMP_PATH, '/').'/newfile.ini', $target->getFileName());
+    }
+
+    function testConstructorDoesNotFailWithModifiersLackingGetPreferedFiles() {
+        $one = new IniModifierReadOnly(new testIniFileModifier('one.ini', '
+[s]
+foo=1
+'));
+        $two = new testIniFileModifier('two.ini', '
+[s]
+foo=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+
+        $this->assertSame($two, $multi->resolveTarget('foo', 's'));
+    }
 }
