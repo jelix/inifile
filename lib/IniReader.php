@@ -43,6 +43,16 @@ class IniReader implements IniReaderInterface
     const TK_ARR_VALUE = 4;
 
     /**
+     * @const string regexp matching a "@preferedFile <filename>" comment attribute
+     */
+    const PREFERED_FILE_REGEXP = '/^\s*[;#]\s*@preferedFile\s+(\S+)\s*$/';
+
+    /**
+     * @const string regexp matching a "@defaultPreferedFile <filename>" comment attribute
+     */
+    const DEFAULT_PREFERED_FILE_REGEXP = '/^\s*[;#]\s*@defaultPreferedFile\s+(\S+)\s*$/';
+
+    /**
      * each item of this array contains data for a section. the key of the item
      * is the section name. There is a section with the key "0", and which contains
      * data for options which are not in a section.
@@ -63,6 +73,17 @@ class IniReader implements IniReaderInterface
      * @var string the filename of the ini file
      */
     protected $filename = '';
+
+    /**
+     * map of section name => prefered ini filename, from @preferedFile comments.
+     * @var array
+     */
+    protected $preferedFileBySection = array();
+
+    /**
+     * @var string|null the file-wide default prefered filename, from a @defaultPreferedFile comment
+     */
+    protected $defaultPreferedFile = null;
 
     /**
      * load the given ini file.
@@ -102,6 +123,8 @@ class IniReader implements IniReaderInterface
     protected function parse($lines, $format = 0)
     {
         $this->content = array(0 => array());
+        $this->preferedFileBySection = array();
+        $this->defaultPreferedFile = null;
         $currentSection = 0;
         $multiline = false;
         $currentValue = null;
@@ -148,12 +171,30 @@ class IniReader implements IniReaderInterface
                 }
             } elseif (preg_match($commentRegExp, $line, $m)) {
                 $this->content[$currentSection][] = array(self::TK_COMMENT, $m[1]);
+                if (preg_match(self::DEFAULT_PREFERED_FILE_REGEXP, $m[1], $dm)) {
+                    $this->defaultPreferedFile = $dm[1] === 'self' ? basename($this->filename) : $dm[1];
+                }
             } elseif (preg_match('/^(\\s*\\[([^\\]]+)\\]\\s*)/ui', $line, $m)) {
                 if (strpos($m[2], ';')) {
                     // ';' is forbidden in the name as it begins a comment
                     throw new IniSyntaxException("Invalid syntax for the section name: \"".$m[2].'"');
                 }
-                $currentSection = $m[2];
+                $newSection = $m[2];
+                $tail = $this->content[$currentSection];
+                end($tail);
+                while (($tok = current($tail)) !== false) {
+                    if ($tok[0] === self::TK_COMMENT) {
+                        if (preg_match(self::PREFERED_FILE_REGEXP, $tok[1], $pm)) {
+                            $this->preferedFileBySection[$newSection] =
+                                $pm[1] === 'self' ? basename($this->filename) : $pm[1];
+                            break;
+                        }
+                    } elseif ($tok[0] !== self::TK_WS) {
+                        break;
+                    }
+                    $tok = prev($tail);
+                }
+                $currentSection = $newSection;
                 $this->content[$currentSection] = array(
                     array(self::TK_SECTION, $m[1]),
                 );
@@ -275,5 +316,25 @@ class IniReader implements IniReaderInterface
         $list = array_keys($this->content);
         array_shift($list); // remove the global section
         return $list;
+    }
+
+    /**
+     * return the prefered ini file for each section that declares one (via its own
+     * @preferedFile comment attribute, or the file's @defaultPreferedFile attribute).
+     *
+     * @return array section name => filename
+     */
+    public function getPreferedFiles()
+    {
+        $result = array();
+        foreach ($this->getSectionList() as $section) {
+            if (isset($this->preferedFileBySection[$section])) {
+                $result[$section] = $this->preferedFileBySection[$section];
+            } elseif ($this->defaultPreferedFile !== null) {
+                $result[$section] = $this->defaultPreferedFile;
+            }
+        }
+
+        return $result;
     }
 }

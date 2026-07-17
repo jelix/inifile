@@ -11,6 +11,7 @@
       <file>MultiIniModifierTest.php</file>
       <file>IniModifierArrayTest.php</file>
       <file>IniModifierArray2Test.php</file>
+      <file>IniReaderTest.php</file>
       <file>mergeIniObjectTest.php</file>
     </testsuite>
   </testsuites>
