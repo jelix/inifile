@@ -103,7 +103,7 @@ class IniReader implements IniReaderInterface
     public function isEmpty()
     {
         $c = count($this->content);
-        if ( $c === 0 || ($c == 1 && count($this->content[0]) === 0)) {
+        if ($c === 0 || ($c == 1 && count($this->content[0]) === 0)) {
             return true;
         }
         return false;
@@ -276,7 +276,8 @@ class IniReader implements IniReaderInterface
         return $values;
     }
 
-    protected function convertValue($value) {
+    protected function convertValue($value)
+    {
         if (!is_string($value)) {
             // values that are set after the parsing, may be PHP raw values...
             return $value;

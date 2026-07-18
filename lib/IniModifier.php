@@ -40,8 +40,7 @@ class IniModifier extends IniReader implements IniModifierInterface
             $this->parse(preg_split("/(\r\n|\n|\r)/", file_get_contents($filename)), $format);
         } elseif ($initialContent != '') {
             $this->parse(preg_split("/(\r\n|\n|\r)/", $initialContent), $format);
-        }
-        else {
+        } else {
             $this->content = array(0 => array());
         }
     }
@@ -152,7 +151,8 @@ class IniModifier extends IniReader implements IniModifierInterface
         }
     }
 
-    protected function _compareNewValue($iniValue, $newValue) {
+    protected function _compareNewValue($iniValue, $newValue)
+    {
         $iniVal = $this->convertValue($iniValue);
         $newVal = $this->convertValue($newValue);
         return ($iniVal == $newVal);
@@ -411,30 +411,30 @@ class IniModifier extends IniReader implements IniModifierInterface
             foreach ($section as $item) {
                 $lastToken = $item[0];
                 switch ($item[0]) {
-                  case self::TK_SECTION:
-                    if ($item[1] != '0') {
-                        $content .= $item[1]."\n";
-                    }
-                    break;
-                  case self::TK_WS:
-                    if ($item[1] == '--') {
+                    case self::TK_SECTION:
+                        if ($item[1] != '0') {
+                            $content .= $item[1]."\n";
+                        }
                         break;
-                    }
-                    // no break
-                  case self::TK_COMMENT:
-                    $content .= $item[1]."\n";
-                    break;
-                  case self::TK_VALUE:
+                    case self::TK_WS:
+                        if ($item[1] == '--') {
+                            break;
+                        }
+                        // no break
+                    case self::TK_COMMENT:
+                        $content .= $item[1]."\n";
+                        break;
+                    case self::TK_VALUE:
                         $content .= $item[1].$equal.$this->getIniValue($item[2], $format)."\n";
-                    break;
-                  case self::TK_ARR_VALUE:
-                      if (is_numeric($item[3])) {
-                          $content .= $item[1].'[]'.$equal.$this->getIniValue($item[2], $format)."\n";
-                      } else {
-                          $content .= $item[1].'['.$item[3].']'.$equal.$this->getIniValue($item[2], $format)."\n";
-                      }
+                        break;
+                    case self::TK_ARR_VALUE:
+                        if (is_numeric($item[3])) {
+                            $content .= $item[1].'[]'.$equal.$this->getIniValue($item[2], $format)."\n";
+                        } else {
+                            $content .= $item[1].'['.$item[3].']'.$equal.$this->getIniValue($item[2], $format)."\n";
+                        }
 
-                    break;
+                        break;
                 }
             }
         }
@@ -553,8 +553,8 @@ class IniModifier extends IniReader implements IniModifierInterface
                     }
                     // no break
                 case self::TK_COMMENT:
-                  $previousItems [] = $item;
-                  break;
+                    $previousItems [] = $item;
+                    break;
                 case self::TK_VALUE:
                 case self::TK_ARR_VALUE:
                     $found = false;

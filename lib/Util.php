@@ -69,9 +69,12 @@ class Util
      *
      * @since 2.0
      */
-    public static function readAndMergeObject($filename, $content, $flags = 0,
-                                              $ignoredSection = array())
-    {
+    public static function readAndMergeObject(
+        $filename,
+        $content,
+        $flags = 0,
+        $ignoredSection = array()
+    ) {
         if (!file_exists($filename)) {
             return false;
         }
@@ -100,8 +103,7 @@ class Util
         $contentToImport,
         $flags = 0,
         $ignoredSection = array()
-    )
-    {
+    ) {
         $contentToImport = (array) $contentToImport;
 
         foreach ($contentToImport as $k => $v) {
