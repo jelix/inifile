@@ -84,6 +84,35 @@ class IniModifierArray2 extends IniModifierArray
     }
 
     /**
+     * Move sections having a prefered file into that file, when they currently live in
+     * another modifiable ini file of the stack. Creates the prefered ini file (inserting it
+     * into the stack) if it doesn't exist yet.
+     */
+    public function dispatchSectionToPreferedFiles()
+    {
+        foreach ($this->preferedFileBySection as $section => $filename) {
+            $target = $this->findModifierByFileName($filename);
+            if ($target === null) {
+                $target = new IniModifier($filename);
+                $this->insertModifierBeforeLast($filename, $target);
+            } elseif (!($target instanceof IniModifierInterface)) {
+                continue;
+            }
+
+            foreach ($this->modifiers as $mod) {
+                if ($mod === $target || !($mod instanceof IniModifierInterface)) {
+                    continue;
+                }
+                if (!$mod->isSection($section)) {
+                    continue;
+                }
+                $target->setValues($mod->getValues($section), $section);
+                $mod->removeSection($section);
+            }
+        }
+    }
+
+    /**
      * Modify an option in the most relevant ini file of the stack. If the option doesn't exist,
      * it is created into the modifiable file closest to the end of the list.
      *

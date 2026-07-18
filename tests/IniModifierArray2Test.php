@@ -437,4 +437,156 @@ foo=2
 
         $this->assertSame($two, $multi->resolveTarget('foo', 's'));
     }
+
+    function testDispatchMovesSectionToItsPreferedFile() {
+        $one = new testIniFileModifier('one.ini', '
+other=1
+');
+        $two = new testIniFileModifier('two.ini', '
+[s]
+foo=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi->setPreferedFile(array('s'), 'one.ini');
+
+        $multi->dispatchSectionToPreferedFiles();
+
+        $this->assertEquals('2', $one->getValue('foo', 's'));
+        $this->assertFalse($two->isSection('s'));
+    }
+
+    function testDispatchIsANoopWhenSectionAlreadyInPreferedFile() {
+        $one = new testIniFileModifier('one.ini', '
+[s]
+foo=1
+');
+        $two = new testIniFileModifier('two.ini', '
+other=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi->setPreferedFile(array('s'), 'one.ini');
+
+        $multi->dispatchSectionToPreferedFiles();
+
+        $this->assertEquals('1', $one->getValue('foo', 's'));
+        $this->assertFalse($two->isSection('s'));
+    }
+
+    function testDispatchMergesSectionFromSeveralOtherFiles() {
+        $one = new testIniFileModifier('one.ini', '
+other=1
+');
+        $two = new testIniFileModifier('two.ini', '
+[s]
+foo=2
+');
+        $three = new testIniFileModifier('three.ini', '
+[s]
+bar=3
+');
+        $multi = new testIniFileModifierArray2(array($one, $two, $three));
+        $multi->setPreferedFile(array('s'), 'one.ini');
+
+        $multi->dispatchSectionToPreferedFiles();
+
+        $this->assertEquals('2', $one->getValue('foo', 's'));
+        $this->assertEquals('3', $one->getValue('bar', 's'));
+        $this->assertFalse($two->isSection('s'));
+        $this->assertFalse($three->isSection('s'));
+    }
+
+    function testDispatchCreatesThePreferedFileWhenAbsentFromTheStack() {
+        $one = new testIniFileModifier('one.ini', '
+[s]
+foo=1
+');
+        $two = new testIniFileModifier('two.ini', '
+other=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi->setPreferedFile(array('s'), TEMP_PATH.'newfile.ini');
+        $this->assertCount(2, $multi);
+
+        $multi->dispatchSectionToPreferedFiles();
+
+        $this->assertCount(3, $multi);
+        $target = $multi[TEMP_PATH.'newfile.ini'];
+        $this->assertEquals('1', $target->getValue('foo', 's'));
+        $this->assertFalse($one->isSection('s'));
+
+        $keys = array();
+        foreach ($multi as $k => $mod) {
+            $keys[] = $k;
+        }
+        $this->assertEquals(array(0, TEMP_PATH.'newfile.ini', 1), $keys);
+    }
+
+    function testDispatchSkipsWhenPreferedFileTargetIsReadOnly() {
+        $one = new IniModifierReadOnly(new testIniFileModifier('one.ini', '
+other=1
+'));
+        $two = new testIniFileModifier('two.ini', '
+[s]
+foo=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi->setPreferedFile(array('s'), 'one.ini');
+
+        $multi->dispatchSectionToPreferedFiles();
+
+        $this->assertTrue($two->isSection('s'));
+        $this->assertEquals('2', $two->getValue('foo', 's'));
+    }
+
+    function testDispatchPreservesArrayValues() {
+        $one = new testIniFileModifier('one.ini', '
+other=1
+');
+        $two = new testIniFileModifier('two.ini', '
+[s]
+foo[]=aaa
+foo[]=bbb
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi->setPreferedFile(array('s'), 'one.ini');
+
+        $multi->dispatchSectionToPreferedFiles();
+
+        $this->assertEquals(array('aaa', 'bbb'), $one->getValue('foo', 's'));
+        $this->assertFalse($two->isSection('s'));
+    }
+
+    function testDispatchLeavesUnmappedSectionsUntouched() {
+        $one = new testIniFileModifier('one.ini', '
+[a]
+x=1
+');
+        $two = new testIniFileModifier('two.ini', '
+[b]
+y=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+
+        $multi->dispatchSectionToPreferedFiles();
+
+        $this->assertTrue($one->isSection('a'));
+        $this->assertTrue($two->isSection('b'));
+    }
+
+    function testDispatchSkipsReadOnlySourceFiles() {
+        $one = new IniModifierReadOnly(new testIniFileModifier('one.ini', '
+[s]
+foo=1
+'));
+        $two = new testIniFileModifier('two.ini', '
+other=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi->setPreferedFile(array('s'), 'two.ini');
+
+        $multi->dispatchSectionToPreferedFiles();
+
+        $this->assertEquals('1', $one->getValue('foo', 's'));
+        $this->assertFalse($two->isSection('s'));
+    }
 }
