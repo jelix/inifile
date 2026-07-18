@@ -129,4 +129,66 @@ foo=bar
         $ini = new testIniFileModifier('foo.ini', $content);
         $this->assertEquals($content, $ini->generate());
     }
+
+    function testPreferedFileWithSectionParamCanBeAnywhere() {
+        $ini = new testIniFileModifier('foo.ini', '
+; @preferedFile exemple.ini exemple
+foo=bar
+[exemple]
+baz=qux
+');
+        $this->assertEquals(array('exemple' => 'exemple.ini'), $ini->getPreferedFiles());
+    }
+
+    function testPreferedFileWithSectionParamForNonExistentSection() {
+        $ini = new testIniFileModifier('foo.ini', '
+; @preferedFile secrets.ini db
+[other]
+foo=bar
+');
+        $this->assertEquals(array('db' => 'secrets.ini'), $ini->getPreferedFiles());
+    }
+
+    function testPreferedFileWithSectionParamSelf() {
+        $ini = new testIniFileModifier('/some/path/myconfig.ini', '
+; @preferedFile self db
+[other]
+foo=bar
+');
+        $this->assertEquals(array('db' => 'myconfig.ini'), $ini->getPreferedFiles());
+    }
+
+    function testPreferedFileWithSectionParamDoesNotAttachToFollowingSection() {
+        $ini = new testIniFileModifier('foo.ini', '
+; @preferedFile secrets.ini db
+[exemple]
+foo=bar
+');
+        $this->assertEquals(array('db' => 'secrets.ini'), $ini->getPreferedFiles());
+    }
+
+    function testMixOfOneAndTwoParameterForms() {
+        $ini = new testIniFileModifier('foo.ini', '
+; @preferedFile shared.ini other
+; @preferedFile exemple-specific.ini
+[exemple]
+foo=1
+[other]
+bar=2
+');
+        $this->assertEquals(
+            array('exemple' => 'exemple-specific.ini', 'other' => 'shared.ini'),
+            $ini->getPreferedFiles()
+        );
+    }
+
+    function testRoundTripPreservesTwoParameterCommentVerbatim() {
+        $content = '
+; @preferedFile secrets.ini db
+[exemple]
+foo=bar
+';
+        $ini = new testIniFileModifier('foo.ini', $content);
+        $this->assertEquals($content, $ini->generate());
+    }
 }

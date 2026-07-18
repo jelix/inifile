@@ -43,9 +43,10 @@ class IniReader implements IniReaderInterface
     const TK_ARR_VALUE = 4;
 
     /**
-     * @const string regexp matching a "@preferedFile <filename>" comment attribute
+     * @const string regexp matching a "@preferedFile <filename>" or
+     *               "@preferedFile <filename> <section>" comment attribute
      */
-    const PREFERED_FILE_REGEXP = '/^\s*[;#]\s*@preferedFile\s+(\S+)\s*$/';
+    const PREFERED_FILE_REGEXP = '/^\s*[;#]\s*@preferedFile\s+(\S+)(?:\s+(\S+))?\s*$/';
 
     /**
      * @const string regexp matching a "@defaultPreferedFile <filename>" comment attribute
@@ -173,6 +174,8 @@ class IniReader implements IniReaderInterface
                 $this->content[$currentSection][] = array(self::TK_COMMENT, $m[1]);
                 if (preg_match(self::DEFAULT_PREFERED_FILE_REGEXP, $m[1], $dm)) {
                     $this->defaultPreferedFile = $dm[1] === 'self' ? basename($this->filename) : $dm[1];
+                } elseif (preg_match(self::PREFERED_FILE_REGEXP, $m[1], $pm) && isset($pm[2]) && $pm[2] !== '') {
+                    $this->preferedFileBySection[$pm[2]] = $pm[1] === 'self' ? basename($this->filename) : $pm[1];
                 }
             } elseif (preg_match('/^(\\s*\\[([^\\]]+)\\]\\s*)/ui', $line, $m)) {
                 if (strpos($m[2], ';')) {
@@ -184,7 +187,8 @@ class IniReader implements IniReaderInterface
                 end($tail);
                 while (($tok = current($tail)) !== false) {
                     if ($tok[0] === self::TK_COMMENT) {
-                        if (preg_match(self::PREFERED_FILE_REGEXP, $tok[1], $pm)) {
+                        if (preg_match(self::PREFERED_FILE_REGEXP, $tok[1], $pm)
+                            && (!isset($pm[2]) || $pm[2] === '')) {
                             $this->preferedFileBySection[$newSection] =
                                 $pm[1] === 'self' ? basename($this->filename) : $pm[1];
                             break;
@@ -322,6 +326,8 @@ class IniReader implements IniReaderInterface
     /**
      * return the prefered ini file for each section that declares one (via its own
      * @preferedFile comment attribute, or the file's @defaultPreferedFile attribute).
+     * This also includes sections declared via a two-parameter "@preferedFile <filename>
+     * <section>" attribute, even if that section doesn't (yet) exist in this file.
      *
      * @return array section name => filename
      */
@@ -333,6 +339,11 @@ class IniReader implements IniReaderInterface
                 $result[$section] = $this->preferedFileBySection[$section];
             } elseif ($this->defaultPreferedFile !== null) {
                 $result[$section] = $this->defaultPreferedFile;
+            }
+        }
+        foreach ($this->preferedFileBySection as $section => $filename) {
+            if (!isset($result[$section])) {
+                $result[$section] = $filename;
             }
         }
 
