@@ -37,7 +37,7 @@ class SmartIniModifierArray extends IniModifierArray
     /**
      * @param \Jelix\IniFile\IniReaderInterface[]|string[] $modifiers the list of ini file names or ini reader/modifier objects
      * @param string|null $preferredFilesDirectory directory into which filenames with only relative path
-     *                                            given to setPreferredFile() should be resolved
+     *                                            given to setPreferredFile() or `@preferredFile` should be resolved
      */
     public function __construct(array $modifiers, $preferredFilesDirectory = null)
     {
