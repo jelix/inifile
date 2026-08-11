@@ -11,7 +11,7 @@ require_once(__DIR__.'/lib.php');
 use Jelix\IniFile\IniException;
 use \Jelix\IniFile\IniModifierReadOnly;
 
-class IniModifierArray2Test extends \PHPUnit\Framework\TestCase {
+class SmartIniModifierArrayTest extends \PHPUnit\Framework\TestCase {
 
     function testSetValueRule1PicksFileHavingSectionAndParam() {
         $one = new testIniFileModifier('foo.ini', '
@@ -26,7 +26,7 @@ foo=2
 [s]
 baz=3
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two, $three));
+        $multi = new testSmartIniFileModifierArray(array($one, $two, $three));
         $this->assertSame($two, $multi->resolveTarget('foo', 's'));
 
         $multi->setValue('foo', 'X', 's');
@@ -51,7 +51,7 @@ foo=2
 [s]
 foo=3
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two, $three));
+        $multi = new testSmartIniFileModifierArray(array($one, $two, $three));
         $this->assertSame($three, $multi->resolveTarget('foo', 's'));
 
         $multi->setValue('foo', 'X', 's');
@@ -70,7 +70,7 @@ someother=1
         $three = new testIniFileModifier('foo.ini', '
 other=3
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two, $three));
+        $multi = new testSmartIniFileModifierArray(array($one, $two, $three));
         $this->assertSame($two, $multi->resolveTarget('foo', 's'));
 
         $multi->setValue('foo', 'X', 's');
@@ -91,7 +91,7 @@ baz=2
 [s]
 qux=3
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two, $three));
+        $multi = new testSmartIniFileModifierArray(array($one, $two, $three));
         $this->assertSame($three, $multi->resolveTarget('foo', 's'));
     }
 
@@ -105,7 +105,7 @@ other=2
         $three = new testIniFileModifier('foo.ini', '
 other=3
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two, $three));
+        $multi = new testSmartIniFileModifierArray(array($one, $two, $three));
         $this->assertSame($three, $multi->resolveTarget('baz', 'newsection'));
 
         $multi->setValue('baz', 'v', 'newsection');
@@ -127,7 +127,7 @@ someother=1
 [s]
 foo=readonly-value
 '));
-        $multi = new testIniFileModifierArray2(array($one, $two, $three));
+        $multi = new testSmartIniFileModifierArray(array($one, $two, $three));
 
         $target = $multi->resolveTarget('foo', 's');
         $this->assertSame($two, $target);
@@ -150,7 +150,7 @@ foo=readonly-value
         $three = new testIniFileModifier('foo.ini', '
 other=3
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two, $three));
+        $multi = new testSmartIniFileModifierArray(array($one, $two, $three));
 
         $target = $multi->resolveTarget('foo', 's');
         $this->assertSame($one, $target);
@@ -171,7 +171,7 @@ foo=1
 [s]
 foo=2
 '));
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
 
         $this->assertNull($multi->resolveTarget('foo', 's'));
 
@@ -192,7 +192,7 @@ a=orig
 [sec]
 other=val
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two, $three));
+        $multi = new testSmartIniFileModifierArray(array($one, $two, $three));
 
         $multi->setValues(array('a' => '1', 'b' => '2'), 'sec');
 
@@ -207,7 +207,7 @@ other=val
 [s]
 foo=1
 ');
-        $multi = new testIniFileModifierArray2(array($one));
+        $multi = new testSmartIniFileModifierArray(array($one));
 
         $this->assertSame($one, $multi->resolveTarget('foo', 's'));
         $this->assertSame($one, $multi->resolveTarget('newparam', 'newsection'));
@@ -225,7 +225,7 @@ foo=bar
 [s]
 foo=baz
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $this->assertEquals('baz', $multi->getValue('foo', 's'));
     }
 
@@ -238,7 +238,7 @@ foo=bar
 [s]
 foo=baz
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $multi->removeValue('foo', 's');
         $this->assertNull($one->getValue('foo', 's'));
         $this->assertNull($two->getValue('foo', 's'));
@@ -257,7 +257,7 @@ foo=2
 [s]
 foo=3
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two, $three));
+        $multi = new testSmartIniFileModifierArray(array($one, $two, $three));
 
         // without the mapping, rule 1 would pick $three (closest to end)
         $this->assertSame($three, $multi->resolveTarget('foo', 's'));
@@ -280,7 +280,7 @@ foo=readonly
 [s]
 foo=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
 
         $multi->setPreferedFile(array('s'), 'one.ini');
         $this->assertSame($two, $multi->resolveTarget('foo', 's'));
@@ -297,7 +297,7 @@ other=1
         $two = new testIniFileModifier('two.ini', '
 other=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
 
         $multi->setPreferedFile(array('s'), TEMP_PATH.'newfile.ini');
         $this->assertCount(2, $multi);
@@ -324,7 +324,7 @@ other=2
         $one = new testIniFileModifier('one.ini', '
 other=1
 ');
-        $multi = new testIniFileModifierArray2(array($one), TEMP_PATH);
+        $multi = new testSmartIniFileModifierArray(array($one), TEMP_PATH);
 
         $multi->setPreferedFile(array('s'), 'newfile.ini');
         $target = $multi->resolveTarget('foo', 's');
@@ -335,7 +335,7 @@ other=1
         $one = new testIniFileModifier('one.ini', '
 other=1
 ');
-        $multi = new testIniFileModifierArray2(array($one));
+        $multi = new testSmartIniFileModifierArray(array($one));
 
         $multi->setPreferedFile(array('s'), 'newfile.ini');
         $target = $multi->resolveTarget('foo', 's');
@@ -355,7 +355,7 @@ foo=2
 [s2]
 bar=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
 
         $multi->setPreferedFile(array('s1', 's2'), 'one.ini');
         $this->assertSame($one, $multi->resolveTarget('foo', 's1'));
@@ -371,7 +371,7 @@ foo=1
 [s]
 foo=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
 
         $multi->setPreferedFile(array('other'), 'one.ini');
         $this->assertSame($two, $multi->resolveTarget('foo', 's'));
@@ -387,7 +387,7 @@ foo=1
 [s]
 foo=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
 
         $this->assertSame($two, $multi->resolveTarget('foo', 's'));
     }
@@ -407,7 +407,7 @@ foo=2
 [s]
 foo=3
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two, $three));
+        $multi = new testSmartIniFileModifierArray(array($one, $two, $three));
 
         $this->assertSame($three, $multi->resolveTarget('foo', 's'));
     }
@@ -418,7 +418,7 @@ foo=3
 [s]
 foo=1
 ');
-        $multi = new testIniFileModifierArray2(array($one), TEMP_PATH);
+        $multi = new testSmartIniFileModifierArray(array($one), TEMP_PATH);
 
         $target = $multi->resolveTarget('foo', 's');
         $this->assertEquals(rtrim(TEMP_PATH, '/').'/newfile.ini', $target->getFileName());
@@ -433,7 +433,7 @@ foo=1
 [s]
 foo=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
 
         $this->assertSame($two, $multi->resolveTarget('foo', 's'));
     }
@@ -446,7 +446,7 @@ other=1
 [s]
 foo=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $multi->setPreferedFile(array('s'), 'one.ini');
 
         $multi->dispatchSectionToPreferedFiles();
@@ -463,7 +463,7 @@ foo=1
         $two = new testIniFileModifier('two.ini', '
 other=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $multi->setPreferedFile(array('s'), 'one.ini');
 
         $multi->dispatchSectionToPreferedFiles();
@@ -484,7 +484,7 @@ foo=2
 [s]
 bar=3
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two, $three));
+        $multi = new testSmartIniFileModifierArray(array($one, $two, $three));
         $multi->setPreferedFile(array('s'), 'one.ini');
 
         $multi->dispatchSectionToPreferedFiles();
@@ -503,7 +503,7 @@ foo=1
         $two = new testIniFileModifier('two.ini', '
 other=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $multi->setPreferedFile(array('s'), TEMP_PATH.'newfile.ini');
         $this->assertCount(2, $multi);
 
@@ -529,7 +529,7 @@ other=1
 [s]
 foo=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $multi->setPreferedFile(array('s'), 'one.ini');
 
         $multi->dispatchSectionToPreferedFiles();
@@ -547,7 +547,7 @@ other=1
 foo[]=aaa
 foo[]=bbb
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $multi->setPreferedFile(array('s'), 'one.ini');
 
         $multi->dispatchSectionToPreferedFiles();
@@ -565,7 +565,7 @@ x=1
 [b]
 y=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
 
         $multi->dispatchSectionToPreferedFiles();
 
@@ -581,7 +581,7 @@ foo=1
         $two = new testIniFileModifier('two.ini', '
 other=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $multi->setPreferedFile(array('s'), 'two.ini');
 
         $multi->dispatchSectionToPreferedFiles();
@@ -598,7 +598,7 @@ other=1
 [foobar]
 a=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $multi->setPreferedFile(array('foo*'), 'one.ini');
 
         $this->assertSame($one, $multi->resolveTarget('a', 'foobar'));
@@ -613,7 +613,7 @@ foo=1
 [s]
 foo=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $multi->setPreferedFile(array('foo*'), 'one.ini');
 
         $this->assertSame($two, $multi->resolveTarget('foo', 's'));
@@ -626,7 +626,7 @@ other=1
         $two = new testIniFileModifier('specific.ini', '
 other=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $multi->setPreferedFile(array('foo*'), 'general.ini');
         $multi->setPreferedFile(array('foobar*'), 'specific.ini');
 
@@ -640,7 +640,7 @@ other=1
         $two = new testIniFileModifier('specific.ini', '
 other=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $multi->setPreferedFile(array('foobar*'), 'specific.ini');
         $multi->setPreferedFile(array('foo*'), 'general.ini');
 
@@ -655,7 +655,7 @@ other=1
 [foobar]
 a=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $multi->setPreferedFile(array('foo*'), 'one.ini');
 
         $multi->dispatchSectionToPreferedFiles();
@@ -672,7 +672,7 @@ a=1
         $two = new testIniFileModifier('two.ini', '
 other=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $multi->setPreferedFile(array('foo*'), TEMP_PATH.'wildcard-target.ini');
         $this->assertCount(2, $multi);
 
@@ -692,7 +692,7 @@ a=1
         $two = new testIniFileModifier('two.ini', '
 b=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
         $multi->setPreferedFile(array('foo*'), TEMP_PATH.'never-created.ini');
         $this->assertCount(2, $multi);
 
@@ -709,7 +709,7 @@ a=1
         $exact = new testIniFileModifier('exact.ini', '
 other=1
 ');
-        $multi = new testIniFileModifierArray2(array($two, $exact));
+        $multi = new testSmartIniFileModifierArray(array($two, $exact));
         $multi->setPreferedFile(array('foobar'), 'exact.ini');
         $multi->setPreferedFile(array('foo*'), 'wildcard.ini');
         $this->assertCount(2, $multi);
@@ -729,7 +729,7 @@ a=1
         $exact = new testIniFileModifier('exact.ini', '
 other=1
 ');
-        $multi = new testIniFileModifierArray2(array($two, $exact));
+        $multi = new testSmartIniFileModifierArray(array($two, $exact));
         $multi->setPreferedFile(array('foo*'), 'wildcard.ini');
         $multi->setPreferedFile(array('foobar'), 'exact.ini');
         $this->assertCount(2, $multi);
@@ -750,7 +750,7 @@ other=1
 [foobar]
 a=2
 ');
-        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi = new testSmartIniFileModifierArray(array($one, $two));
 
         $this->assertSame($two, $multi->resolveTarget('a', 'foobar'));
     }

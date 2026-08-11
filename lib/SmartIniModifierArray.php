@@ -21,7 +21,7 @@ namespace Jelix\IniFile;
  * Unlike IniModifierArray::setValue(), this always finds a writable target as long as any
  * modifier in the stack is writable, even if the literal last element of the list is read-only.
  */
-class IniModifierArray2 extends IniModifierArray
+class SmartIniModifierArray extends IniModifierArray
 {
     /**
      * map of section name => filename, populated by setPreferedFile().

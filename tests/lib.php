@@ -8,7 +8,7 @@
 use \Jelix\IniFile\IniModifier;
 use \Jelix\IniFile\MultiIniModifier;
 use \Jelix\IniFile\IniModifierArray;
-use \Jelix\IniFile\IniModifierArray2;
+use \Jelix\IniFile\SmartIniModifierArray;
 
 define('TEMP_PATH', __DIR__.'/temp/');
 
@@ -38,7 +38,7 @@ class testIniFileModifierArray extends IniModifierArray {
     function generateIni($index){ return $this->modifiers[$index]->generateIni(0); }
 }
 
-class testIniFileModifierArray2 extends IniModifierArray2 {
+class testSmartIniFileModifierArray extends SmartIniModifierArray {
 
     function generateIni($index){ return $this->modifiers[$index]->generateIni(0); }
 
