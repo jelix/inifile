@@ -43,6 +43,18 @@ class IniReader implements IniReaderInterface
     const TK_ARR_VALUE = 4;
 
     /**
+     * @const string regexp matching a "@preferedFile <filename>" or
+     *               "@preferedFile <filename> <section>" comment attribute. The <section>
+     *               parameter may end with '*' to act as a prefix wildcard.
+     */
+    const PREFERED_FILE_REGEXP = '/^\s*[;#]\s*@preferedFile\s+(\S+)(?:\s+(\S+))?\s*$/';
+
+    /**
+     * @const string regexp matching a "@defaultPreferedFile <filename>" comment attribute
+     */
+    const DEFAULT_PREFERED_FILE_REGEXP = '/^\s*[;#]\s*@defaultPreferedFile\s+(\S+)\s*$/';
+
+    /**
      * each item of this array contains data for a section. the key of the item
      * is the section name. There is a section with the key "0", and which contains
      * data for options which are not in a section.
@@ -65,6 +77,17 @@ class IniReader implements IniReaderInterface
     protected $filename = '';
 
     /**
+     * map of section name => prefered ini filename, from @preferedFile comments.
+     * @var array
+     */
+    protected $preferedFileBySection = array();
+
+    /**
+     * @var string|null the file-wide default prefered filename, from a @defaultPreferedFile comment
+     */
+    protected $defaultPreferedFile = null;
+
+    /**
      * load the given ini file.
      *
      * @param string $filename the file to load
@@ -82,7 +105,7 @@ class IniReader implements IniReaderInterface
     public function isEmpty()
     {
         $c = count($this->content);
-        if ( $c === 0 || ($c == 1 && count($this->content[0]) === 0)) {
+        if ($c === 0 || ($c == 1 && count($this->content[0]) === 0)) {
             return true;
         }
         return false;
@@ -102,6 +125,8 @@ class IniReader implements IniReaderInterface
     protected function parse($lines, $format = 0)
     {
         $this->content = array(0 => array());
+        $this->preferedFileBySection = array();
+        $this->defaultPreferedFile = null;
         $currentSection = 0;
         $multiline = false;
         $currentValue = null;
@@ -148,12 +173,33 @@ class IniReader implements IniReaderInterface
                 }
             } elseif (preg_match($commentRegExp, $line, $m)) {
                 $this->content[$currentSection][] = array(self::TK_COMMENT, $m[1]);
+                if (preg_match(self::DEFAULT_PREFERED_FILE_REGEXP, $m[1], $dm)) {
+                    $this->defaultPreferedFile = $dm[1] === '$current-file-name' ? basename($this->filename) : $dm[1];
+                } elseif (preg_match(self::PREFERED_FILE_REGEXP, $m[1], $pm) && isset($pm[2]) && $pm[2] !== '') {
+                    $this->preferedFileBySection[$pm[2]] = $pm[1] === '$current-file-name' ? basename($this->filename) : $pm[1];
+                }
             } elseif (preg_match('/^(\\s*\\[([^\\]]+)\\]\\s*)/ui', $line, $m)) {
                 if (strpos($m[2], ';')) {
                     // ';' is forbidden in the name as it begins a comment
                     throw new IniSyntaxException("Invalid syntax for the section name: \"".$m[2].'"');
                 }
-                $currentSection = $m[2];
+                $newSection = $m[2];
+                $tail = $this->content[$currentSection];
+                end($tail);
+                while (($tok = current($tail)) !== false) {
+                    if ($tok[0] === self::TK_COMMENT) {
+                        if (preg_match(self::PREFERED_FILE_REGEXP, $tok[1], $pm)
+                            && (!isset($pm[2]) || $pm[2] === '')) {
+                            $this->preferedFileBySection[$newSection] =
+                                $pm[1] === '$current-file-name' ? basename($this->filename) : $pm[1];
+                            break;
+                        }
+                    } elseif ($tok[0] !== self::TK_WS) {
+                        break;
+                    }
+                    $tok = prev($tail);
+                }
+                $currentSection = $newSection;
                 $this->content[$currentSection] = array(
                     array(self::TK_SECTION, $m[1]),
                 );
@@ -235,7 +281,8 @@ class IniReader implements IniReaderInterface
         return $values;
     }
 
-    protected function convertValue($value) {
+    protected function convertValue($value)
+    {
         if (!is_string($value)) {
             // values that are set after the parsing, may be PHP raw values...
             return $value;
@@ -275,5 +322,67 @@ class IniReader implements IniReaderInterface
         $list = array_keys($this->content);
         array_shift($list); // remove the global section
         return $list;
+    }
+
+    /**
+     * Resolve the prefered filename declared for the given section, honoring prefix
+     * wildcards: a key ending with '*' matches any section whose name starts with
+     * the part before the '*'. An exact key always wins over a wildcard; among
+     * matching wildcards, the one with the longest prefix wins.
+     *
+     * @param string|int $section
+     * @return string|null
+     */
+    protected function resolvePreferedFileForSection($section)
+    {
+        $section = (string) $section;
+
+        if (isset($this->preferedFileBySection[$section])) {
+            return $this->preferedFileBySection[$section];
+        }
+
+        $bestPrefixLength = -1;
+        $bestFilename = null;
+        foreach ($this->preferedFileBySection as $pattern => $filename) {
+            if (substr($pattern, -1) !== '*') {
+                continue;
+            }
+            $prefix = substr($pattern, 0, -1);
+            if (strpos($section, $prefix) === 0 && strlen($prefix) > $bestPrefixLength) {
+                $bestPrefixLength = strlen($prefix);
+                $bestFilename = $filename;
+            }
+        }
+
+        return $bestFilename;
+    }
+
+    /**
+     * return the prefered ini file for each section that declares one (via its own
+     * @preferedFile comment attribute, or the file's @defaultPreferedFile attribute).
+     * This also includes sections declared via a two-parameter "@preferedFile <filename>
+     * <section>" attribute, even if that section doesn't (yet) exist in this file. A
+     * section name ending with '*' in that attribute acts as a prefix wildcard.
+     *
+     * @return array section name => filename
+     */
+    public function getPreferedFiles()
+    {
+        $result = array();
+        foreach ($this->getSectionList() as $section) {
+            $filename = $this->resolvePreferedFileForSection($section);
+            if ($filename !== null) {
+                $result[$section] = $filename;
+            } elseif ($this->defaultPreferedFile !== null) {
+                $result[$section] = $this->defaultPreferedFile;
+            }
+        }
+        foreach ($this->preferedFileBySection as $section => $filename) {
+            if (!isset($result[$section])) {
+                $result[$section] = $filename;
+            }
+        }
+
+        return $result;
     }
 }

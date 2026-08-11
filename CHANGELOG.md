@@ -1,5 +1,13 @@
 Changelog
 
+3.5.0-pre
+=========
+
+- new class: `\Jelix\IniFile\SmartIniModifierArray`. It allows to set values in a specific file, determined by rules
+  set for the section of the values.
+- new minimum PHP version: 7.4.
+
+
 3.4.0
 =====
 

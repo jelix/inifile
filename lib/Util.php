@@ -69,9 +69,12 @@ class Util
      *
      * @since 2.0
      */
-    public static function readAndMergeObject($filename, $content, $flags = 0,
-                                              $ignoredSection = array())
-    {
+    public static function readAndMergeObject(
+        $filename,
+        $content,
+        $flags = 0,
+        $ignoredSection = array()
+    ) {
         if (!file_exists($filename)) {
             return false;
         }
@@ -88,7 +91,7 @@ class Util
      * merge two simple StdClass object.
      *
      * @param object $baseContent     the object which receives new properties
-     * @param object $contentToImport the object providing new properties
+     * @param object|array $contentToImport the object providing new properties
      * @param int    $flags           a combination of constants NOT_MERGE_*, NORMAL_MERGE_*
      * @param array  $ignoredSection  list of sections or top level parameters that
      *                                should not be merged
@@ -100,8 +103,7 @@ class Util
         $contentToImport,
         $flags = 0,
         $ignoredSection = array()
-    )
-    {
+    ) {
         $contentToImport = (array) $contentToImport;
 
         foreach ($contentToImport as $k => $v) {
