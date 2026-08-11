@@ -244,7 +244,7 @@ foo=baz
         $this->assertNull($two->getValue('foo', 's'));
     }
 
-    function testSetPreferedFilePicksMappedWritableModifierOverOtherRules() {
+    function testSetPreferredFilePicksMappedWritableModifierOverOtherRules() {
         $one = new testIniFileModifier('one.ini', '
 [s]
 foo=1
@@ -262,7 +262,7 @@ foo=3
         // without the mapping, rule 1 would pick $three (closest to end)
         $this->assertSame($three, $multi->resolveTarget('foo', 's'));
 
-        $multi->setPreferedFile(array('s'), 'one.ini');
+        $multi->setPreferredFile(array('s'), 'one.ini');
         $this->assertSame($one, $multi->resolveTarget('foo', 's'));
 
         $multi->setValue('foo', 'X', 's');
@@ -271,7 +271,7 @@ foo=3
         $this->assertEquals('3', $three->getValue('foo', 's'));
     }
 
-    function testSetPreferedFileFallsThroughWhenMappedModifierIsReadOnly() {
+    function testSetPreferredFileFallsThroughWhenMappedModifierIsReadOnly() {
         $one = new IniModifierReadOnly(new testIniFileModifier('one.ini', '
 [s]
 foo=readonly
@@ -282,7 +282,7 @@ foo=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
 
-        $multi->setPreferedFile(array('s'), 'one.ini');
+        $multi->setPreferredFile(array('s'), 'one.ini');
         $this->assertSame($two, $multi->resolveTarget('foo', 's'));
 
         $multi->setValue('foo', 'X', 's');
@@ -290,7 +290,7 @@ foo=2
         $this->assertEquals('readonly', $one->getValue('foo', 's'));
     }
 
-    function testSetPreferedFileCreatesModifierWhenFileIsAbsentFromTheStack() {
+    function testSetPreferredFileCreatesModifierWhenFileIsAbsentFromTheStack() {
         $one = new testIniFileModifier('one.ini', '
 other=1
 ');
@@ -299,7 +299,7 @@ other=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
 
-        $multi->setPreferedFile(array('s'), TEMP_PATH.'newfile.ini');
+        $multi->setPreferredFile(array('s'), TEMP_PATH.'newfile.ini');
         $this->assertCount(2, $multi);
 
         $target = $multi->resolveTarget('foo', 's');
@@ -320,29 +320,29 @@ other=2
         $this->assertEquals(array(0, TEMP_PATH.'newfile.ini', 1), $keys);
     }
 
-    function testSetPreferedFileResolvesBareFilenameAgainstConstructorDirectory() {
+    function testSetPreferredFileResolvesBareFilenameAgainstConstructorDirectory() {
         $one = new testIniFileModifier('one.ini', '
 other=1
 ');
         $multi = new testSmartIniFileModifierArray(array($one), TEMP_PATH);
 
-        $multi->setPreferedFile(array('s'), 'newfile.ini');
+        $multi->setPreferredFile(array('s'), 'newfile.ini');
         $target = $multi->resolveTarget('foo', 's');
         $this->assertEquals(rtrim(TEMP_PATH, '/').'/newfile.ini', $target->getFileName());
     }
 
-    function testSetPreferedFileKeepsBareFilenameWhenNoDirectoryGiven() {
+    function testSetPreferredFileKeepsBareFilenameWhenNoDirectoryGiven() {
         $one = new testIniFileModifier('one.ini', '
 other=1
 ');
         $multi = new testSmartIniFileModifierArray(array($one));
 
-        $multi->setPreferedFile(array('s'), 'newfile.ini');
+        $multi->setPreferredFile(array('s'), 'newfile.ini');
         $target = $multi->resolveTarget('foo', 's');
         $this->assertEquals('newfile.ini', $target->getFileName());
     }
 
-    function testSetPreferedFileWithMultipleSectionsMappedToSameFile() {
+    function testSetPreferredFileWithMultipleSectionsMappedToSameFile() {
         $one = new testIniFileModifier('one.ini', '
 [s1]
 foo=1
@@ -357,7 +357,7 @@ bar=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
 
-        $multi->setPreferedFile(array('s1', 's2'), 'one.ini');
+        $multi->setPreferredFile(array('s1', 's2'), 'one.ini');
         $this->assertSame($one, $multi->resolveTarget('foo', 's1'));
         $this->assertSame($one, $multi->resolveTarget('bar', 's2'));
     }
@@ -373,13 +373,13 @@ foo=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
 
-        $multi->setPreferedFile(array('other'), 'one.ini');
+        $multi->setPreferredFile(array('other'), 'one.ini');
         $this->assertSame($two, $multi->resolveTarget('foo', 's'));
     }
 
-    function testConstructorAutoPopulatesFromModifiersPreferedFiles() {
+    function testConstructorAutoPopulatesFromModifiersPreferredFiles() {
         $one = new testIniFileModifier('one.ini', '
-; @preferedFile two.ini
+; @preferredFile two.ini
 [s]
 foo=1
 ');
@@ -394,12 +394,12 @@ foo=2
 
     function testConstructorLaterModifierPreferenceOverridesEarlierOne() {
         $one = new testIniFileModifier('one.ini', '
-; @preferedFile one.ini
+; @preferredFile one.ini
 [s]
 foo=1
 ');
         $two = new testIniFileModifier('two.ini', '
-; @preferedFile three.ini
+; @preferredFile three.ini
 [s]
 foo=2
 ');
@@ -412,9 +412,9 @@ foo=3
         $this->assertSame($three, $multi->resolveTarget('foo', 's'));
     }
 
-    function testConstructorResolvesRelativePreferedFileAgainstDirectory() {
+    function testConstructorResolvesRelativePreferredFileAgainstDirectory() {
         $one = new testIniFileModifier('one.ini', '
-; @preferedFile newfile.ini
+; @preferredFile newfile.ini
 [s]
 foo=1
 ');
@@ -424,7 +424,7 @@ foo=1
         $this->assertEquals(rtrim(TEMP_PATH, '/').'/newfile.ini', $target->getFileName());
     }
 
-    function testConstructorDoesNotFailWithModifiersLackingGetPreferedFiles() {
+    function testConstructorDoesNotFailWithModifiersLackingGetPreferredFiles() {
         $one = new IniModifierReadOnly(new testIniFileModifier('one.ini', '
 [s]
 foo=1
@@ -438,7 +438,7 @@ foo=2
         $this->assertSame($two, $multi->resolveTarget('foo', 's'));
     }
 
-    function testDispatchMovesSectionToItsPreferedFile() {
+    function testDispatchMovesSectionToItsPreferredFile() {
         $one = new testIniFileModifier('one.ini', '
 other=1
 ');
@@ -447,15 +447,15 @@ other=1
 foo=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
-        $multi->setPreferedFile(array('s'), 'one.ini');
+        $multi->setPreferredFile(array('s'), 'one.ini');
 
-        $multi->dispatchSectionToPreferedFiles();
+        $multi->dispatchSectionToPreferredFiles();
 
         $this->assertEquals('2', $one->getValue('foo', 's'));
         $this->assertFalse($two->isSection('s'));
     }
 
-    function testDispatchIsANoopWhenSectionAlreadyInPreferedFile() {
+    function testDispatchIsANoopWhenSectionAlreadyInPreferredFile() {
         $one = new testIniFileModifier('one.ini', '
 [s]
 foo=1
@@ -464,9 +464,9 @@ foo=1
 other=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
-        $multi->setPreferedFile(array('s'), 'one.ini');
+        $multi->setPreferredFile(array('s'), 'one.ini');
 
-        $multi->dispatchSectionToPreferedFiles();
+        $multi->dispatchSectionToPreferredFiles();
 
         $this->assertEquals('1', $one->getValue('foo', 's'));
         $this->assertFalse($two->isSection('s'));
@@ -485,9 +485,9 @@ foo=2
 bar=3
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two, $three));
-        $multi->setPreferedFile(array('s'), 'one.ini');
+        $multi->setPreferredFile(array('s'), 'one.ini');
 
-        $multi->dispatchSectionToPreferedFiles();
+        $multi->dispatchSectionToPreferredFiles();
 
         $this->assertEquals('2', $one->getValue('foo', 's'));
         $this->assertEquals('3', $one->getValue('bar', 's'));
@@ -495,7 +495,7 @@ bar=3
         $this->assertFalse($three->isSection('s'));
     }
 
-    function testDispatchCreatesThePreferedFileWhenAbsentFromTheStack() {
+    function testDispatchCreatesThePreferredFileWhenAbsentFromTheStack() {
         $one = new testIniFileModifier('one.ini', '
 [s]
 foo=1
@@ -504,10 +504,10 @@ foo=1
 other=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
-        $multi->setPreferedFile(array('s'), TEMP_PATH.'newfile.ini');
+        $multi->setPreferredFile(array('s'), TEMP_PATH.'newfile.ini');
         $this->assertCount(2, $multi);
 
-        $multi->dispatchSectionToPreferedFiles();
+        $multi->dispatchSectionToPreferredFiles();
 
         $this->assertCount(3, $multi);
         $target = $multi[TEMP_PATH.'newfile.ini'];
@@ -521,7 +521,7 @@ other=2
         $this->assertEquals(array(0, TEMP_PATH.'newfile.ini', 1), $keys);
     }
 
-    function testDispatchSkipsWhenPreferedFileTargetIsReadOnly() {
+    function testDispatchSkipsWhenPreferredFileTargetIsReadOnly() {
         $one = new IniModifierReadOnly(new testIniFileModifier('one.ini', '
 other=1
 '));
@@ -530,9 +530,9 @@ other=1
 foo=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
-        $multi->setPreferedFile(array('s'), 'one.ini');
+        $multi->setPreferredFile(array('s'), 'one.ini');
 
-        $multi->dispatchSectionToPreferedFiles();
+        $multi->dispatchSectionToPreferredFiles();
 
         $this->assertTrue($two->isSection('s'));
         $this->assertEquals('2', $two->getValue('foo', 's'));
@@ -548,9 +548,9 @@ foo[]=aaa
 foo[]=bbb
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
-        $multi->setPreferedFile(array('s'), 'one.ini');
+        $multi->setPreferredFile(array('s'), 'one.ini');
 
-        $multi->dispatchSectionToPreferedFiles();
+        $multi->dispatchSectionToPreferredFiles();
 
         $this->assertEquals(array('aaa', 'bbb'), $one->getValue('foo', 's'));
         $this->assertFalse($two->isSection('s'));
@@ -567,7 +567,7 @@ y=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
 
-        $multi->dispatchSectionToPreferedFiles();
+        $multi->dispatchSectionToPreferredFiles();
 
         $this->assertTrue($one->isSection('a'));
         $this->assertTrue($two->isSection('b'));
@@ -582,15 +582,15 @@ foo=1
 other=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
-        $multi->setPreferedFile(array('s'), 'two.ini');
+        $multi->setPreferredFile(array('s'), 'two.ini');
 
-        $multi->dispatchSectionToPreferedFiles();
+        $multi->dispatchSectionToPreferredFiles();
 
         $this->assertEquals('1', $one->getValue('foo', 's'));
         $this->assertFalse($two->isSection('s'));
     }
 
-    function testSetPreferedFileWildcardRoutesMatchingSection() {
+    function testSetPreferredFileWildcardRoutesMatchingSection() {
         $one = new testIniFileModifier('one.ini', '
 other=1
 ');
@@ -599,12 +599,12 @@ other=1
 a=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
-        $multi->setPreferedFile(array('foo*'), 'one.ini');
+        $multi->setPreferredFile(array('foo*'), 'one.ini');
 
         $this->assertSame($one, $multi->resolveTarget('a', 'foobar'));
     }
 
-    function testSetPreferedFileWildcardDoesNotMatchUnrelatedSection() {
+    function testSetPreferredFileWildcardDoesNotMatchUnrelatedSection() {
         $one = new testIniFileModifier('one.ini', '
 [s]
 foo=1
@@ -614,12 +614,12 @@ foo=1
 foo=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
-        $multi->setPreferedFile(array('foo*'), 'one.ini');
+        $multi->setPreferredFile(array('foo*'), 'one.ini');
 
         $this->assertSame($two, $multi->resolveTarget('foo', 's'));
     }
 
-    function testSetPreferedFileLongestWildcardPrefixWins() {
+    function testSetPreferredFileLongestWildcardPrefixWins() {
         $one = new testIniFileModifier('general.ini', '
 other=1
 ');
@@ -627,13 +627,13 @@ other=1
 other=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
-        $multi->setPreferedFile(array('foo*'), 'general.ini');
-        $multi->setPreferedFile(array('foobar*'), 'specific.ini');
+        $multi->setPreferredFile(array('foo*'), 'general.ini');
+        $multi->setPreferredFile(array('foobar*'), 'specific.ini');
 
         $this->assertSame($two, $multi->resolveTarget('a', 'foobarbaz'));
     }
 
-    function testSetPreferedFileLongestWildcardPrefixWinsRegardlessOfOrder() {
+    function testSetPreferredFileLongestWildcardPrefixWinsRegardlessOfOrder() {
         $one = new testIniFileModifier('general.ini', '
 other=1
 ');
@@ -641,8 +641,8 @@ other=1
 other=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
-        $multi->setPreferedFile(array('foobar*'), 'specific.ini');
-        $multi->setPreferedFile(array('foo*'), 'general.ini');
+        $multi->setPreferredFile(array('foobar*'), 'specific.ini');
+        $multi->setPreferredFile(array('foo*'), 'general.ini');
 
         $this->assertSame($two, $multi->resolveTarget('a', 'foobarbaz'));
     }
@@ -656,9 +656,9 @@ other=1
 a=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
-        $multi->setPreferedFile(array('foo*'), 'one.ini');
+        $multi->setPreferredFile(array('foo*'), 'one.ini');
 
-        $multi->dispatchSectionToPreferedFiles();
+        $multi->dispatchSectionToPreferredFiles();
 
         $this->assertEquals('2', $one->getValue('a', 'foobar'));
         $this->assertFalse($two->isSection('foobar'));
@@ -673,10 +673,10 @@ a=1
 other=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
-        $multi->setPreferedFile(array('foo*'), TEMP_PATH.'wildcard-target.ini');
+        $multi->setPreferredFile(array('foo*'), TEMP_PATH.'wildcard-target.ini');
         $this->assertCount(2, $multi);
 
-        $multi->dispatchSectionToPreferedFiles();
+        $multi->dispatchSectionToPreferredFiles();
 
         $this->assertCount(3, $multi);
         $target = $multi[TEMP_PATH.'wildcard-target.ini'];
@@ -693,10 +693,10 @@ a=1
 b=2
 ');
         $multi = new testSmartIniFileModifierArray(array($one, $two));
-        $multi->setPreferedFile(array('foo*'), TEMP_PATH.'never-created.ini');
+        $multi->setPreferredFile(array('foo*'), TEMP_PATH.'never-created.ini');
         $this->assertCount(2, $multi);
 
-        $multi->dispatchSectionToPreferedFiles();
+        $multi->dispatchSectionToPreferredFiles();
 
         $this->assertCount(2, $multi);
     }
@@ -710,11 +710,11 @@ a=1
 other=1
 ');
         $multi = new testSmartIniFileModifierArray(array($two, $exact));
-        $multi->setPreferedFile(array('foobar'), 'exact.ini');
-        $multi->setPreferedFile(array('foo*'), 'wildcard.ini');
+        $multi->setPreferredFile(array('foobar'), 'exact.ini');
+        $multi->setPreferredFile(array('foo*'), 'wildcard.ini');
         $this->assertCount(2, $multi);
 
-        $multi->dispatchSectionToPreferedFiles();
+        $multi->dispatchSectionToPreferredFiles();
 
         $this->assertEquals('1', $exact->getValue('a', 'foobar'));
         $this->assertFalse($two->isSection('foobar'));
@@ -730,20 +730,20 @@ a=1
 other=1
 ');
         $multi = new testSmartIniFileModifierArray(array($two, $exact));
-        $multi->setPreferedFile(array('foo*'), 'wildcard.ini');
-        $multi->setPreferedFile(array('foobar'), 'exact.ini');
+        $multi->setPreferredFile(array('foo*'), 'wildcard.ini');
+        $multi->setPreferredFile(array('foobar'), 'exact.ini');
         $this->assertCount(2, $multi);
 
-        $multi->dispatchSectionToPreferedFiles();
+        $multi->dispatchSectionToPreferredFiles();
 
         $this->assertEquals('1', $exact->getValue('a', 'foobar'));
         $this->assertFalse($two->isSection('foobar'));
         $this->assertCount(2, $multi);
     }
 
-    function testConstructorAutoPopulatesWildcardPreferedFileFromModifier() {
+    function testConstructorAutoPopulatesWildcardPreferredFileFromModifier() {
         $one = new testIniFileModifier('one.ini', '
-; @preferedFile two.ini foo*
+; @preferredFile two.ini foo*
 other=1
 ');
         $two = new testIniFileModifier('two.ini', '

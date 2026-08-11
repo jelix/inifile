@@ -10,27 +10,27 @@ require_once(__DIR__.'/lib.php');
 
 class IniReaderTest extends \PHPUnit\Framework\TestCase {
 
-    function testPlainPreferedFile() {
+    function testPlainPreferredFile() {
         $ini = new testIniFileModifier('foo.ini', '
-; @preferedFile exemple.ini
+; @preferredFile exemple.ini
 [exemple]
 foo=bar
 ');
-        $this->assertEquals(array('exemple' => 'exemple.ini'), $ini->getPreferedFiles());
+        $this->assertEquals(array('exemple' => 'exemple.ini'), $ini->getPreferredFiles());
     }
 
-    function testPreferedFileSelf() {
+    function testPreferredFileSelf() {
         $ini = new testIniFileModifier('/some/path/myconfig.ini', '
-; @preferedFile $current-file-name
+; @preferredFile $current-file-name
 [exemple]
 foo=bar
 ');
-        $this->assertEquals(array('exemple' => 'myconfig.ini'), $ini->getPreferedFiles());
+        $this->assertEquals(array('exemple' => 'myconfig.ini'), $ini->getPreferredFiles());
     }
 
-    function testDefaultPreferedFileAppliesToAllSections() {
+    function testDefaultPreferredFileAppliesToAllSections() {
         $ini = new testIniFileModifier('foo.ini', '
-; @defaultPreferedFile default.ini
+; @defaultPreferredFile default.ini
 [exemple]
 foo=bar
 [other]
@@ -38,14 +38,14 @@ baz=qux
 ');
         $this->assertEquals(
             array('exemple' => 'default.ini', 'other' => 'default.ini'),
-            $ini->getPreferedFiles()
+            $ini->getPreferredFiles()
         );
     }
 
     function testPerSectionOverridesDefault() {
         $ini = new testIniFileModifier('foo.ini', '
-; @defaultPreferedFile default.ini
-; @preferedFile override.ini
+; @defaultPreferredFile default.ini
+; @preferredFile override.ini
 [exemple]
 foo=bar
 [other]
@@ -53,13 +53,13 @@ baz=qux
 ');
         $this->assertEquals(
             array('exemple' => 'override.ini', 'other' => 'default.ini'),
-            $ini->getPreferedFiles()
+            $ini->getPreferredFiles()
         );
     }
 
-    function testDefaultPreferedFileSelf() {
+    function testDefaultPreferredFileSelf() {
         $ini = new testIniFileModifier('/some/path/myconfig.ini', '
-; @defaultPreferedFile $current-file-name
+; @defaultPreferredFile $current-file-name
 [exemple]
 foo=bar
 [other]
@@ -67,7 +67,7 @@ baz=qux
 ');
         $this->assertEquals(
             array('exemple' => 'myconfig.ini', 'other' => 'myconfig.ini'),
-            $ini->getPreferedFiles()
+            $ini->getPreferredFiles()
         );
     }
 
@@ -76,13 +76,13 @@ baz=qux
 [exemple]
 foo=bar
 ');
-        $this->assertArrayNotHasKey('exemple', $ini->getPreferedFiles());
+        $this->assertArrayNotHasKey('exemple', $ini->getPreferredFiles());
     }
 
     function testMultipleSectionsMixed() {
         $ini = new testIniFileModifier('foo.ini', '
-; @defaultPreferedFile default.ini
-; @preferedFile override.ini
+; @defaultPreferredFile default.ini
+; @preferredFile override.ini
 [withOwn]
 foo=bar
 [withDefault]
@@ -96,7 +96,7 @@ hop=1
                 'withDefault' => 'default.ini',
                 'none' => 'default.ini',
             ),
-            $ini->getPreferedFiles()
+            $ini->getPreferredFiles()
         );
     }
 
@@ -106,7 +106,7 @@ hop=1
 [exemple]
 foo=bar
 ');
-        $this->assertEquals(array(), $ini->getPreferedFiles());
+        $this->assertEquals(array(), $ini->getPreferredFiles());
     }
 
     function testNoAttributesAtAll() {
@@ -116,13 +116,13 @@ foo=bar
 [other]
 baz=qux
 ');
-        $this->assertEquals(array(), $ini->getPreferedFiles());
+        $this->assertEquals(array(), $ini->getPreferredFiles());
     }
 
     function testRoundTripPreservesCommentVerbatim() {
         $content = '
-; @defaultPreferedFile default.ini
-; @preferedFile exemple.ini
+; @defaultPreferredFile default.ini
+; @preferredFile exemple.ini
 [exemple]
 foo=bar
 ';
@@ -130,47 +130,47 @@ foo=bar
         $this->assertEquals($content, $ini->generate());
     }
 
-    function testPreferedFileWithSectionParamCanBeAnywhere() {
+    function testPreferredFileWithSectionParamCanBeAnywhere() {
         $ini = new testIniFileModifier('foo.ini', '
-; @preferedFile exemple.ini exemple
+; @preferredFile exemple.ini exemple
 foo=bar
 [exemple]
 baz=qux
 ');
-        $this->assertEquals(array('exemple' => 'exemple.ini'), $ini->getPreferedFiles());
+        $this->assertEquals(array('exemple' => 'exemple.ini'), $ini->getPreferredFiles());
     }
 
-    function testPreferedFileWithSectionParamForNonExistentSection() {
+    function testPreferredFileWithSectionParamForNonExistentSection() {
         $ini = new testIniFileModifier('foo.ini', '
-; @preferedFile secrets.ini db
+; @preferredFile secrets.ini db
 [other]
 foo=bar
 ');
-        $this->assertEquals(array('db' => 'secrets.ini'), $ini->getPreferedFiles());
+        $this->assertEquals(array('db' => 'secrets.ini'), $ini->getPreferredFiles());
     }
 
-    function testPreferedFileWithSectionParamSelf() {
+    function testPreferredFileWithSectionParamSelf() {
         $ini = new testIniFileModifier('/some/path/myconfig.ini', '
-; @preferedFile $current-file-name db
+; @preferredFile $current-file-name db
 [other]
 foo=bar
 ');
-        $this->assertEquals(array('db' => 'myconfig.ini'), $ini->getPreferedFiles());
+        $this->assertEquals(array('db' => 'myconfig.ini'), $ini->getPreferredFiles());
     }
 
-    function testPreferedFileWithSectionParamDoesNotAttachToFollowingSection() {
+    function testPreferredFileWithSectionParamDoesNotAttachToFollowingSection() {
         $ini = new testIniFileModifier('foo.ini', '
-; @preferedFile secrets.ini db
+; @preferredFile secrets.ini db
 [exemple]
 foo=bar
 ');
-        $this->assertEquals(array('db' => 'secrets.ini'), $ini->getPreferedFiles());
+        $this->assertEquals(array('db' => 'secrets.ini'), $ini->getPreferredFiles());
     }
 
     function testMixOfOneAndTwoParameterForms() {
         $ini = new testIniFileModifier('foo.ini', '
-; @preferedFile shared.ini other
-; @preferedFile exemple-specific.ini
+; @preferredFile shared.ini other
+; @preferredFile exemple-specific.ini
 [exemple]
 foo=1
 [other]
@@ -178,13 +178,13 @@ bar=2
 ');
         $this->assertEquals(
             array('exemple' => 'exemple-specific.ini', 'other' => 'shared.ini'),
-            $ini->getPreferedFiles()
+            $ini->getPreferredFiles()
         );
     }
 
     function testRoundTripPreservesTwoParameterCommentVerbatim() {
         $content = '
-; @preferedFile secrets.ini db
+; @preferredFile secrets.ini db
 [exemple]
 foo=bar
 ';
@@ -192,9 +192,9 @@ foo=bar
         $this->assertEquals($content, $ini->generate());
     }
 
-    function testPreferedFileWildcardMatchesPrefixedSections() {
+    function testPreferredFileWildcardMatchesPrefixedSections() {
         $ini = new testIniFileModifier('foo.ini', '
-; @preferedFile shared.ini foo*
+; @preferredFile shared.ini foo*
 [foo]
 a=1
 [foobar]
@@ -202,23 +202,23 @@ b=2
 ');
         $this->assertEquals(
             array('foo' => 'shared.ini', 'foobar' => 'shared.ini', 'foo*' => 'shared.ini'),
-            $ini->getPreferedFiles()
+            $ini->getPreferredFiles()
         );
     }
 
-    function testPreferedFileWildcardDoesNotMatchUnrelatedSection() {
+    function testPreferredFileWildcardDoesNotMatchUnrelatedSection() {
         $ini = new testIniFileModifier('foo.ini', '
-; @preferedFile shared.ini foo*
+; @preferredFile shared.ini foo*
 [barfoo]
 a=1
 ');
-        $this->assertArrayNotHasKey('barfoo', $ini->getPreferedFiles());
+        $this->assertArrayNotHasKey('barfoo', $ini->getPreferredFiles());
     }
 
-    function testPreferedFileLongestWildcardPrefixWins() {
+    function testPreferredFileLongestWildcardPrefixWins() {
         $ini = new testIniFileModifier('foo.ini', '
-; @preferedFile general.ini foo*
-; @preferedFile specific.ini foobar*
+; @preferredFile general.ini foo*
+; @preferredFile specific.ini foobar*
 [foobarbaz]
 a=1
 ');
@@ -228,32 +228,32 @@ a=1
                 'foo*' => 'general.ini',
                 'foobar*' => 'specific.ini',
             ),
-            $ini->getPreferedFiles()
+            $ini->getPreferredFiles()
         );
     }
 
-    function testPreferedFileWildcardPassesThroughWhenNoSectionMatchesInThisFile() {
+    function testPreferredFileWildcardPassesThroughWhenNoSectionMatchesInThisFile() {
         $ini = new testIniFileModifier('foo.ini', '
-; @preferedFile shared.ini foo*
+; @preferredFile shared.ini foo*
 [other]
 a=1
 ');
         $this->assertEquals(
             array('foo*' => 'shared.ini'),
-            $ini->getPreferedFiles()
+            $ini->getPreferredFiles()
         );
     }
 
-    function testPreferedFileExactSectionWinsOverWildcard() {
+    function testPreferredFileExactSectionWinsOverWildcard() {
         $ini = new testIniFileModifier('foo.ini', '
-; @preferedFile shared.ini foo*
-; @preferedFile literal.ini
+; @preferredFile shared.ini foo*
+; @preferredFile literal.ini
 [foo]
 a=1
 ');
         $this->assertEquals(
             array('foo' => 'literal.ini', 'foo*' => 'shared.ini'),
-            $ini->getPreferedFiles()
+            $ini->getPreferredFiles()
         );
     }
 }

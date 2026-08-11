@@ -13,7 +13,7 @@ namespace Jelix\IniFile;
 /**
  * Like IniModifierArray, but setValue()/setValues() write into whichever modifiable ini file
  * of the stack is the most relevant for the given parameter, instead of always the last one:
- * - the prefered modifiable file for the section, if any (see method `setPreferedFile()` or ini attribute `@preferedFile`)
+ * - the preferred modifiable file for the section, if any (see method `setPreferredFile()` or ini attribute `@preferredFile`)
  * - else the modifiable file closest to the end of the list that already has the section and the parameter
  * - else the modifiable file closest to the end of the list that has the section
  * - else the modifiable file closest to the end of the list
@@ -24,32 +24,32 @@ namespace Jelix\IniFile;
 class SmartIniModifierArray extends IniModifierArray
 {
     /**
-     * map of section name => filename, populated by setPreferedFile().
+     * map of section name => filename, populated by setPreferredFile().
      * @var array
      */
-    protected $preferedFileBySection = array();
+    protected $preferredFileBySection = array();
 
     /**
-     * @var string|null directory used to resolve filenames given to setPreferedFile()
+     * @var string|null directory used to resolve filenames given to setPreferredFile()
      */
-    protected $preferedFilesDirectory;
+    protected $preferredFilesDirectory;
 
     /**
      * @param \Jelix\IniFile\IniReaderInterface[]|string[] $modifiers the list of ini file names or ini reader/modifier objects
-     * @param string|null $preferedFilesDirectory directory into which filenames with only relative path
-     *                                            given to setPreferedFile() should be resolved
+     * @param string|null $preferredFilesDirectory directory into which filenames with only relative path
+     *                                            given to setPreferredFile() should be resolved
      */
-    public function __construct(array $modifiers, $preferedFilesDirectory = null)
+    public function __construct(array $modifiers, $preferredFilesDirectory = null)
     {
         parent::__construct($modifiers);
-        $this->preferedFilesDirectory = $preferedFilesDirectory;
+        $this->preferredFilesDirectory = $preferredFilesDirectory;
 
         foreach ($this->modifiers as $mod) {
-            if (!method_exists($mod, 'getPreferedFiles')) {
+            if (!method_exists($mod, 'getPreferredFiles')) {
                 continue;
             }
-            foreach ($mod->getPreferedFiles() as $section => $filename) {
-                $this->preferedFileBySection[$section] = $this->resolvePreferedFilename($filename);
+            foreach ($mod->getPreferredFiles() as $section => $filename) {
+                $this->preferredFileBySection[$section] = $this->resolvePreferredFilename($filename);
             }
         }
     }
@@ -67,11 +67,11 @@ class SmartIniModifierArray extends IniModifierArray
      * @param string $filename the ini file. If it is a relative path filename,
      *                          it is resolved into the directory given to the constructor.
      */
-    public function setPreferedFile($sections, $filename)
+    public function setPreferredFile($sections, $filename)
     {
-        $filename = $this->resolvePreferedFilename($filename);
+        $filename = $this->resolvePreferredFilename($filename);
         foreach ($sections as $section) {
-            $this->preferedFileBySection[$section] = $filename;
+            $this->preferredFileBySection[$section] = $filename;
         }
     }
 
@@ -79,17 +79,17 @@ class SmartIniModifierArray extends IniModifierArray
      * @param string $filename
      * @return string
      */
-    protected function resolvePreferedFilename($filename)
+    protected function resolvePreferredFilename($filename)
     {
-        if ($this->preferedFilesDirectory !== null && $filename[0] != '/') {
-            return rtrim($this->preferedFilesDirectory, '/').'/'.$filename;
+        if ($this->preferredFilesDirectory !== null && $filename[0] != '/') {
+            return rtrim($this->preferredFilesDirectory, '/').'/'.$filename;
         }
 
         return $filename;
     }
 
     /**
-     * Resolve the prefered filename declared for the given section, honoring prefix
+     * Resolve the preferred filename declared for the given section, honoring prefix
      * wildcards: a key ending with '*' matches any section whose name starts with
      * the part before the '*'. An exact key always wins over a wildcard; among
      * matching wildcards, the one with the longest prefix wins.
@@ -97,15 +97,15 @@ class SmartIniModifierArray extends IniModifierArray
      * @param string $section
      * @return string|null
      */
-    protected function resolvePreferedFileForSection($section)
+    protected function resolvePreferredFileForSection($section)
     {
-        if (isset($this->preferedFileBySection[$section])) {
-            return $this->preferedFileBySection[$section];
+        if (isset($this->preferredFileBySection[$section])) {
+            return $this->preferredFileBySection[$section];
         }
 
         $bestPrefixLength = -1;
         $bestFilename = null;
-        foreach ($this->preferedFileBySection as $pattern => $filename) {
+        foreach ($this->preferredFileBySection as $pattern => $filename) {
             if (substr($pattern, -1) !== '*') {
                 continue;
             }
@@ -120,30 +120,30 @@ class SmartIniModifierArray extends IniModifierArray
     }
 
     /**
-     * Move sections having a prefered file into that file, when they currently live in
-     * another modifiable ini file of the stack. Creates the prefered ini file (inserting it
+     * Move sections having a preferred file into that file, when they currently live in
+     * another modifiable ini file of the stack. Creates the preferred ini file (inserting it
      * into the stack) if it doesn't exist yet.
      */
-    public function dispatchSectionToPreferedFiles()
+    public function dispatchSectionToPreferredFiles()
     {
         // exact declarations are always considered, even for a section that doesn't exist
         // anywhere yet; wildcard declarations are only considered for sections that concretely
         // exist somewhere in the stack, otherwise there would be nothing to dispatch and no
         // reason to create their target file
         $sections = array();
-        foreach ($this->preferedFileBySection as $key => $filename) {
+        foreach ($this->preferredFileBySection as $key => $filename) {
             if (substr($key, -1) !== '*') {
                 $sections[$key] = $filename;
             }
         }
         foreach ($this->getSectionList() as $section) {
-            if (!isset($sections[$section]) && ($filename = $this->resolvePreferedFileForSection($section)) !== null) {
+            if (!isset($sections[$section]) && ($filename = $this->resolvePreferredFileForSection($section)) !== null) {
                 $sections[$section] = $filename;
             }
         }
 
         foreach ($sections as $section => $filename) {
-            $this->dispatchOneSectionToPreferedFile($section, $filename);
+            $this->dispatchOneSectionToPreferredFile($section, $filename);
         }
     }
 
@@ -151,7 +151,7 @@ class SmartIniModifierArray extends IniModifierArray
      * @param string $section
      * @param string $filename
      */
-    protected function dispatchOneSectionToPreferedFile($section, $filename)
+    protected function dispatchOneSectionToPreferredFile($section, $filename)
     {
         $target = $this->findModifierByFileName($filename);
         if ($target === null) {
@@ -216,7 +216,7 @@ class SmartIniModifierArray extends IniModifierArray
             $section = 0;
         }
 
-        $filename = $this->resolvePreferedFileForSection($section);
+        $filename = $this->resolvePreferredFileForSection($section);
         if ($filename !== null) {
             $mod = $this->findModifierByFileName($filename);
             if ($mod === null) {
