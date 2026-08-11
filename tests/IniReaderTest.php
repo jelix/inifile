@@ -191,4 +191,69 @@ foo=bar
         $ini = new testIniFileModifier('foo.ini', $content);
         $this->assertEquals($content, $ini->generate());
     }
+
+    function testPreferedFileWildcardMatchesPrefixedSections() {
+        $ini = new testIniFileModifier('foo.ini', '
+; @preferedFile shared.ini foo*
+[foo]
+a=1
+[foobar]
+b=2
+');
+        $this->assertEquals(
+            array('foo' => 'shared.ini', 'foobar' => 'shared.ini', 'foo*' => 'shared.ini'),
+            $ini->getPreferedFiles()
+        );
+    }
+
+    function testPreferedFileWildcardDoesNotMatchUnrelatedSection() {
+        $ini = new testIniFileModifier('foo.ini', '
+; @preferedFile shared.ini foo*
+[barfoo]
+a=1
+');
+        $this->assertArrayNotHasKey('barfoo', $ini->getPreferedFiles());
+    }
+
+    function testPreferedFileLongestWildcardPrefixWins() {
+        $ini = new testIniFileModifier('foo.ini', '
+; @preferedFile general.ini foo*
+; @preferedFile specific.ini foobar*
+[foobarbaz]
+a=1
+');
+        $this->assertEquals(
+            array(
+                'foobarbaz' => 'specific.ini',
+                'foo*' => 'general.ini',
+                'foobar*' => 'specific.ini',
+            ),
+            $ini->getPreferedFiles()
+        );
+    }
+
+    function testPreferedFileWildcardPassesThroughWhenNoSectionMatchesInThisFile() {
+        $ini = new testIniFileModifier('foo.ini', '
+; @preferedFile shared.ini foo*
+[other]
+a=1
+');
+        $this->assertEquals(
+            array('foo*' => 'shared.ini'),
+            $ini->getPreferedFiles()
+        );
+    }
+
+    function testPreferedFileExactSectionWinsOverWildcard() {
+        $ini = new testIniFileModifier('foo.ini', '
+; @preferedFile shared.ini foo*
+; @preferedFile literal.ini
+[foo]
+a=1
+');
+        $this->assertEquals(
+            array('foo' => 'literal.ini', 'foo*' => 'shared.ini'),
+            $ini->getPreferedFiles()
+        );
+    }
 }

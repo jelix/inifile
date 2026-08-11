@@ -44,7 +44,8 @@ class IniReader implements IniReaderInterface
 
     /**
      * @const string regexp matching a "@preferedFile <filename>" or
-     *               "@preferedFile <filename> <section>" comment attribute
+     *               "@preferedFile <filename> <section>" comment attribute. The <section>
+     *               parameter may end with '*' to act as a prefix wildcard.
      */
     const PREFERED_FILE_REGEXP = '/^\s*[;#]\s*@preferedFile\s+(\S+)(?:\s+(\S+))?\s*$/';
 
@@ -324,10 +325,44 @@ class IniReader implements IniReaderInterface
     }
 
     /**
+     * Resolve the prefered filename declared for the given section, honoring prefix
+     * wildcards: a key ending with '*' matches any section whose name starts with
+     * the part before the '*'. An exact key always wins over a wildcard; among
+     * matching wildcards, the one with the longest prefix wins.
+     *
+     * @param string|int $section
+     * @return string|null
+     */
+    protected function resolvePreferedFileForSection($section)
+    {
+        $section = (string) $section;
+
+        if (isset($this->preferedFileBySection[$section])) {
+            return $this->preferedFileBySection[$section];
+        }
+
+        $bestPrefixLength = -1;
+        $bestFilename = null;
+        foreach ($this->preferedFileBySection as $pattern => $filename) {
+            if (substr($pattern, -1) !== '*') {
+                continue;
+            }
+            $prefix = substr($pattern, 0, -1);
+            if (strpos($section, $prefix) === 0 && strlen($prefix) > $bestPrefixLength) {
+                $bestPrefixLength = strlen($prefix);
+                $bestFilename = $filename;
+            }
+        }
+
+        return $bestFilename;
+    }
+
+    /**
      * return the prefered ini file for each section that declares one (via its own
      * @preferedFile comment attribute, or the file's @defaultPreferedFile attribute).
      * This also includes sections declared via a two-parameter "@preferedFile <filename>
-     * <section>" attribute, even if that section doesn't (yet) exist in this file.
+     * <section>" attribute, even if that section doesn't (yet) exist in this file. A
+     * section name ending with '*' in that attribute acts as a prefix wildcard.
      *
      * @return array section name => filename
      */
@@ -335,8 +370,9 @@ class IniReader implements IniReaderInterface
     {
         $result = array();
         foreach ($this->getSectionList() as $section) {
-            if (isset($this->preferedFileBySection[$section])) {
-                $result[$section] = $this->preferedFileBySection[$section];
+            $filename = $this->resolvePreferedFileForSection($section);
+            if ($filename !== null) {
+                $result[$section] = $filename;
             } elseif ($this->defaultPreferedFile !== null) {
                 $result[$section] = $this->defaultPreferedFile;
             }

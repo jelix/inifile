@@ -589,4 +589,169 @@ other=2
         $this->assertEquals('1', $one->getValue('foo', 's'));
         $this->assertFalse($two->isSection('s'));
     }
+
+    function testSetPreferedFileWildcardRoutesMatchingSection() {
+        $one = new testIniFileModifier('one.ini', '
+other=1
+');
+        $two = new testIniFileModifier('two.ini', '
+[foobar]
+a=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi->setPreferedFile(array('foo*'), 'one.ini');
+
+        $this->assertSame($one, $multi->resolveTarget('a', 'foobar'));
+    }
+
+    function testSetPreferedFileWildcardDoesNotMatchUnrelatedSection() {
+        $one = new testIniFileModifier('one.ini', '
+[s]
+foo=1
+');
+        $two = new testIniFileModifier('two.ini', '
+[s]
+foo=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi->setPreferedFile(array('foo*'), 'one.ini');
+
+        $this->assertSame($two, $multi->resolveTarget('foo', 's'));
+    }
+
+    function testSetPreferedFileLongestWildcardPrefixWins() {
+        $one = new testIniFileModifier('general.ini', '
+other=1
+');
+        $two = new testIniFileModifier('specific.ini', '
+other=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi->setPreferedFile(array('foo*'), 'general.ini');
+        $multi->setPreferedFile(array('foobar*'), 'specific.ini');
+
+        $this->assertSame($two, $multi->resolveTarget('a', 'foobarbaz'));
+    }
+
+    function testSetPreferedFileLongestWildcardPrefixWinsRegardlessOfOrder() {
+        $one = new testIniFileModifier('general.ini', '
+other=1
+');
+        $two = new testIniFileModifier('specific.ini', '
+other=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi->setPreferedFile(array('foobar*'), 'specific.ini');
+        $multi->setPreferedFile(array('foo*'), 'general.ini');
+
+        $this->assertSame($two, $multi->resolveTarget('a', 'foobarbaz'));
+    }
+
+    function testDispatchMovesWildcardMatchingSectionFromAnotherFile() {
+        $one = new testIniFileModifier('one.ini', '
+other=1
+');
+        $two = new testIniFileModifier('two.ini', '
+[foobar]
+a=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi->setPreferedFile(array('foo*'), 'one.ini');
+
+        $multi->dispatchSectionToPreferedFiles();
+
+        $this->assertEquals('2', $one->getValue('a', 'foobar'));
+        $this->assertFalse($two->isSection('foobar'));
+    }
+
+    function testDispatchCreatesFileForWildcardMatchWhenAbsentFromStack() {
+        $one = new testIniFileModifier('one.ini', '
+[foobar]
+a=1
+');
+        $two = new testIniFileModifier('two.ini', '
+other=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi->setPreferedFile(array('foo*'), TEMP_PATH.'wildcard-target.ini');
+        $this->assertCount(2, $multi);
+
+        $multi->dispatchSectionToPreferedFiles();
+
+        $this->assertCount(3, $multi);
+        $target = $multi[TEMP_PATH.'wildcard-target.ini'];
+        $this->assertEquals('1', $target->getValue('a', 'foobar'));
+        $this->assertFalse($one->isSection('foobar'));
+    }
+
+    function testDispatchDoesNotCreateFileForWildcardWithNoMatchingSection() {
+        $one = new testIniFileModifier('one.ini', '
+[other]
+a=1
+');
+        $two = new testIniFileModifier('two.ini', '
+b=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+        $multi->setPreferedFile(array('foo*'), TEMP_PATH.'never-created.ini');
+        $this->assertCount(2, $multi);
+
+        $multi->dispatchSectionToPreferedFiles();
+
+        $this->assertCount(2, $multi);
+    }
+
+    function testDispatchExactKeyWinsOverWildcardAvoidingDoubleDispatch() {
+        $two = new testIniFileModifier('two.ini', '
+[foobar]
+a=1
+');
+        $exact = new testIniFileModifier('exact.ini', '
+other=1
+');
+        $multi = new testIniFileModifierArray2(array($two, $exact));
+        $multi->setPreferedFile(array('foobar'), 'exact.ini');
+        $multi->setPreferedFile(array('foo*'), 'wildcard.ini');
+        $this->assertCount(2, $multi);
+
+        $multi->dispatchSectionToPreferedFiles();
+
+        $this->assertEquals('1', $exact->getValue('a', 'foobar'));
+        $this->assertFalse($two->isSection('foobar'));
+        $this->assertCount(2, $multi);
+    }
+
+    function testDispatchExactKeyWinsOverWildcardRegardlessOfOrder() {
+        $two = new testIniFileModifier('two.ini', '
+[foobar]
+a=1
+');
+        $exact = new testIniFileModifier('exact.ini', '
+other=1
+');
+        $multi = new testIniFileModifierArray2(array($two, $exact));
+        $multi->setPreferedFile(array('foo*'), 'wildcard.ini');
+        $multi->setPreferedFile(array('foobar'), 'exact.ini');
+        $this->assertCount(2, $multi);
+
+        $multi->dispatchSectionToPreferedFiles();
+
+        $this->assertEquals('1', $exact->getValue('a', 'foobar'));
+        $this->assertFalse($two->isSection('foobar'));
+        $this->assertCount(2, $multi);
+    }
+
+    function testConstructorAutoPopulatesWildcardPreferedFileFromModifier() {
+        $one = new testIniFileModifier('one.ini', '
+; @preferedFile two.ini foo*
+other=1
+');
+        $two = new testIniFileModifier('two.ini', '
+[foobar]
+a=2
+');
+        $multi = new testIniFileModifierArray2(array($one, $two));
+
+        $this->assertSame($two, $multi->resolveTarget('a', 'foobar'));
+    }
 }

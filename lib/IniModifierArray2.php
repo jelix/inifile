@@ -58,6 +58,11 @@ class IniModifierArray2 extends IniModifierArray
      * Indicate into which ini file the given sections should be stored, when their value
      * is modified with setValue()/setValues(), in priority over the other resolution rules.
      *
+     * A section name ending with '*' acts as a prefix wildcard: it matches any section whose
+     * name starts with the part before the '*' (e.g. 'foo*' matches 'foo', 'foobar', 'foo_baz'...).
+     * An exact section name always wins over a wildcard; among several matching wildcards, the
+     * one with the longest prefix wins.
+     *
      * @param string[] $sections list of section names
      * @param string $filename the ini file. If it is a relative path filename,
      *                          it is resolved into the directory given to the constructor.
@@ -84,31 +89,87 @@ class IniModifierArray2 extends IniModifierArray
     }
 
     /**
+     * Resolve the prefered filename declared for the given section, honoring prefix
+     * wildcards: a key ending with '*' matches any section whose name starts with
+     * the part before the '*'. An exact key always wins over a wildcard; among
+     * matching wildcards, the one with the longest prefix wins.
+     *
+     * @param string $section
+     * @return string|null
+     */
+    protected function resolvePreferedFileForSection($section)
+    {
+        if (isset($this->preferedFileBySection[$section])) {
+            return $this->preferedFileBySection[$section];
+        }
+
+        $bestPrefixLength = -1;
+        $bestFilename = null;
+        foreach ($this->preferedFileBySection as $pattern => $filename) {
+            if (substr($pattern, -1) !== '*') {
+                continue;
+            }
+            $prefix = substr($pattern, 0, -1);
+            if (strpos($section, $prefix) === 0 && strlen($prefix) > $bestPrefixLength) {
+                $bestPrefixLength = strlen($prefix);
+                $bestFilename = $filename;
+            }
+        }
+
+        return $bestFilename;
+    }
+
+    /**
      * Move sections having a prefered file into that file, when they currently live in
      * another modifiable ini file of the stack. Creates the prefered ini file (inserting it
      * into the stack) if it doesn't exist yet.
      */
     public function dispatchSectionToPreferedFiles()
     {
-        foreach ($this->preferedFileBySection as $section => $filename) {
-            $target = $this->findModifierByFileName($filename);
-            if ($target === null) {
-                $target = new IniModifier($filename);
-                $this->insertModifierBeforeLast($filename, $target);
-            } elseif (!($target instanceof IniModifierInterface)) {
+        // exact declarations are always considered, even for a section that doesn't exist
+        // anywhere yet; wildcard declarations are only considered for sections that concretely
+        // exist somewhere in the stack, otherwise there would be nothing to dispatch and no
+        // reason to create their target file
+        $sections = array();
+        foreach ($this->preferedFileBySection as $key => $filename) {
+            if (substr($key, -1) !== '*') {
+                $sections[$key] = $filename;
+            }
+        }
+        foreach ($this->getSectionList() as $section) {
+            if (!isset($sections[$section]) && ($filename = $this->resolvePreferedFileForSection($section)) !== null) {
+                $sections[$section] = $filename;
+            }
+        }
+
+        foreach ($sections as $section => $filename) {
+            $this->dispatchOneSectionToPreferedFile($section, $filename);
+        }
+    }
+
+    /**
+     * @param string $section
+     * @param string $filename
+     */
+    protected function dispatchOneSectionToPreferedFile($section, $filename)
+    {
+        $target = $this->findModifierByFileName($filename);
+        if ($target === null) {
+            $target = new IniModifier($filename);
+            $this->insertModifierBeforeLast($filename, $target);
+        } elseif (!($target instanceof IniModifierInterface)) {
+            return;
+        }
+
+        foreach ($this->modifiers as $mod) {
+            if ($mod === $target || !($mod instanceof IniModifierInterface)) {
                 continue;
             }
-
-            foreach ($this->modifiers as $mod) {
-                if ($mod === $target || !($mod instanceof IniModifierInterface)) {
-                    continue;
-                }
-                if (!$mod->isSection($section)) {
-                    continue;
-                }
-                $target->setValues($mod->getValues($section), $section);
-                $mod->removeSection($section);
+            if (!$mod->isSection($section)) {
+                continue;
             }
+            $target->setValues($mod->getValues($section), $section);
+            $mod->removeSection($section);
         }
     }
 
@@ -155,8 +216,8 @@ class IniModifierArray2 extends IniModifierArray
             $section = 0;
         }
 
-        if (isset($this->preferedFileBySection[$section])) {
-            $filename = $this->preferedFileBySection[$section];
+        $filename = $this->resolvePreferedFileForSection($section);
+        if ($filename !== null) {
             $mod = $this->findModifierByFileName($filename);
             if ($mod === null) {
                 $mod = new IniModifier($filename);
