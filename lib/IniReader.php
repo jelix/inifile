@@ -174,9 +174,9 @@ class IniReader implements IniReaderInterface
             } elseif (preg_match($commentRegExp, $line, $m)) {
                 $this->content[$currentSection][] = array(self::TK_COMMENT, $m[1]);
                 if (preg_match(self::DEFAULT_PREFERED_FILE_REGEXP, $m[1], $dm)) {
-                    $this->defaultPreferedFile = $dm[1] === 'self' ? basename($this->filename) : $dm[1];
+                    $this->defaultPreferedFile = $dm[1] === '$current-file-name' ? basename($this->filename) : $dm[1];
                 } elseif (preg_match(self::PREFERED_FILE_REGEXP, $m[1], $pm) && isset($pm[2]) && $pm[2] !== '') {
-                    $this->preferedFileBySection[$pm[2]] = $pm[1] === 'self' ? basename($this->filename) : $pm[1];
+                    $this->preferedFileBySection[$pm[2]] = $pm[1] === '$current-file-name' ? basename($this->filename) : $pm[1];
                 }
             } elseif (preg_match('/^(\\s*\\[([^\\]]+)\\]\\s*)/ui', $line, $m)) {
                 if (strpos($m[2], ';')) {
@@ -191,7 +191,7 @@ class IniReader implements IniReaderInterface
                         if (preg_match(self::PREFERED_FILE_REGEXP, $tok[1], $pm)
                             && (!isset($pm[2]) || $pm[2] === '')) {
                             $this->preferedFileBySection[$newSection] =
-                                $pm[1] === 'self' ? basename($this->filename) : $pm[1];
+                                $pm[1] === '$current-file-name' ? basename($this->filename) : $pm[1];
                             break;
                         }
                     } elseif ($tok[0] !== self::TK_WS) {

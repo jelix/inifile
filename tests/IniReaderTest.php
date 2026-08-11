@@ -21,7 +21,7 @@ foo=bar
 
     function testPreferedFileSelf() {
         $ini = new testIniFileModifier('/some/path/myconfig.ini', '
-; @preferedFile self
+; @preferedFile $current-file-name
 [exemple]
 foo=bar
 ');
@@ -59,7 +59,7 @@ baz=qux
 
     function testDefaultPreferedFileSelf() {
         $ini = new testIniFileModifier('/some/path/myconfig.ini', '
-; @defaultPreferedFile self
+; @defaultPreferedFile $current-file-name
 [exemple]
 foo=bar
 [other]
@@ -151,7 +151,7 @@ foo=bar
 
     function testPreferedFileWithSectionParamSelf() {
         $ini = new testIniFileModifier('/some/path/myconfig.ini', '
-; @preferedFile self db
+; @preferedFile $current-file-name db
 [other]
 foo=bar
 ');
