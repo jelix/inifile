@@ -28,5 +28,10 @@
             "Jelix\\IniFile\\" : "lib/"
         }
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "stable",
+    "extra" : {
+        "branch-alias": {
+            "dev-master": "3.5.0-dev"
+        }
+    }
 }

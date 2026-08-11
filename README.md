@@ -13,8 +13,8 @@ composer require "jelix/inifile"
 
 # Usage
 
-The ```\Jelix\IniFile\IniModifier``` class allows to read an ini file, to modify its
-content, and save it by preserving its comments and empty lines.
+The ```\Jelix\IniFile\IniModifier``` class allows reading an ini file, modifying its
+content, and saving it by preserving its comments and empty lines.
 
 Don't use this class to just read content. Use instead ```\Jelix\IniFile\Util``` or
 ```parse_ini_file()``` for this purpose, it's more efficient and performant.
@@ -43,7 +43,7 @@ $ini2 = new \Jelix\IniFile\IniModifier('myfile2.ini');
 $ini->import($ini2);
 $ini->save();
 
-// merging two section: merge sectionSource into sectionTarget and then 
+// merging two sections: merge sectionSource into sectionTarget and then 
 // sectionSource is removed
 $ini->mergeSection('sectionSource', 'sectionTarget');
 
@@ -92,14 +92,26 @@ assoc[ov]="other value"
 
 Note: the result can be parsed by `parse_ini_file()`.
 
-
 See the class to learn about other methods and options.
 
-The ```\Jelix\IniFile\MultiIniModifier``` allows to load two ini files at the same time,
+# Other classes
+
+The `\Jelix\IniFile\MultiIniModifier` class allows loading two ini files at the same time,
 where the second one "overrides" values of the first one.
 
-The ```\Jelix\IniFile\IniModifierArray``` allows to load several files at the 
-same time, and to manage their values as if files were merged.
+The `\Jelix\IniFile\IniModifierArray` class allows loading several files at the 
+same time and to manage their values as if files were merged. Modified values are stored in the latest file of the stack.
+The `IniModifier` objects can be accessed by their index in the array like `$ini['my.ini']`.
 
-The ```\Jelix\IniFile\Util``` contains simple methods to read, write and merge ini files.
-These are just wrappers around ```parse_ini_file()```.
+The `\Jelix\IniFile\SmartIniModifierArray` class is like `IniModifierArray`, but when setting a parameter value, it may be set
+into one of the files, instead of the latest file of the stack. Some rules determine the right file to store a parameter:
+
+- the prefered modifiable file indicated by the method `setPreferedFile()`
+- the prefered modifiable file indicated by one of the ini attribute `@preferedFile` or `@defaultPreferedFile`
+- the modifiable file closest to the end of the list that already has the section and the parameter
+- the modifiable file closest to the end of the list that has the section
+- the modifiable file closest to the end of the list
+
+
+The `\Jelix\IniFile\Util` contains simple methods to read, write and merge ini files.
+These are just wrappers around `parse_ini_file()`.
